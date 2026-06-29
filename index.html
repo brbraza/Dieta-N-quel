@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NíQuel – Controle de Níquel na Dieta</title>
+
+<!-- PWA: manifest e ícone padrão -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1117">
+
+<!-- PWA: suporte específico ao iOS/Safari para "Adicionar à Tela de Início" -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NíQuel">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2537;
+    --border: #2a3048;
+    --accent: #38e07b;
+    --accent2: #f5c542;
+    --danger: #f04f4f;
+    --warn: #f59842;
+    --text: #e8ecf5;
+    --muted: #7a86a8;
+    --radius: 14px;
+    --rad-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  /* ===== INTRO MODAL ===== */
+  #intro-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,20,0.97);
+    z-index: 100;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .intro-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 620px;
+    width: 100%;
+    padding: 36px;
+    position: relative;
+    margin: auto;
+  }
+  .intro-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .intro-logo span { color: var(--text); }
+  .intro-tagline {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .intro-section { margin-bottom: 20px; }
+  .intro-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .intro-section p {
+    line-height: 1.7;
+    color: #c2cadf;
+    font-size: 14px;
+  }
+  .point-scale {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .ps-item {
+    background: var(--surface2);
+    border-radius: var(--rad-sm);
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .ps-pts {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .ps-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  .c0 { color: var(--accent); }
+  .c1 { color: #7edf9a; }
+  .c2 { color: var(--accent2); }
+  .c3 { color: var(--warn); }
+  .c4 { color: var(--danger); }
+
+  .limit-box {
+    background: linear-gradient(135deg, rgba(56,224,123,0.08), rgba(56,224,123,0.02));
+    border: 1px solid rgba(56,224,123,0.25);
+    border-radius: var(--rad-sm);
+    padding: 14px 16px;
+    margin-top: 14px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .limit-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .limit-text { font-size: 13px; color: #c2cadf; line-height: 1.6; }
+
+  .source-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    line-height: 1.6;
+  }
+  .btn-start {
+    width: 100%;
+    margin-top: 22px;
+    background: var(--accent);
+    color: #0a1208;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: opacity 0.2s;
+  }
+  .btn-start:hover { opacity: 0.88; }
+
+  /* ===== MAIN APP ===== */
+  #app { display: none; max-width: 900px; margin: 0 auto; padding: 20px 16px 80px; }
+
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .app-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .app-logo span { color: var(--text); }
+  .btn-info {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 50%;
+    width: 34px; height: 34px;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s;
+  }
+  .btn-info:hover { color: var(--text); }
+
+  /* ===== SCORE GAUGE ===== */
+  .gauge-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .gauge-top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .gauge-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+    transition: color 0.4s;
+  }
+  .gauge-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .gauge-limit { text-align: right; }
+  .gauge-limit-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: var(--muted);
+  }
+  .gauge-limit-label { font-size: 11px; color: var(--muted); }
+
+  .progress-track {
+    height: 14px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.5s ease, background 0.4s;
+  }
+
+  .status-message {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    min-height: 20px;
+    transition: color 0.3s;
+  }
+
+  .gauge-uc-row {
+    display: flex; gap: 10px; margin-top: 16px;
+  }
+  .uc-badge {
+    flex: 1; background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    padding: 10px 14px;
+    font-size: 12px; color: var(--muted);
+  }
+  .uc-badge strong {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  /* ===== CONTROLS ===== */
+  .controls-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: 12px 0 10px;
+    margin-bottom: 4px;
+  }
+  .controls {
+    display: flex; gap: 8px; margin-bottom: 8px;
+  }
+  .filter-row {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .search-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(56,224,123,0.06);
+  }
+
+  /* ===== FOOD GRID ===== */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .food-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    user-select: none;
+  }
+  .food-card:hover { border-color: rgba(56,224,123,0.4); background: var(--surface2); }
+  .food-card.selected {
+    border-color: var(--accent);
+    background: rgba(56,224,123,0.05);
+  }
+  .food-card.avoided {
+    border-color: rgba(240,79,79,0.35);
+    background: rgba(240,79,79,0.04);
+    opacity: 0.75;
+  }
+  .food-emoji { font-size: 26px; margin-bottom: 8px; display: block; }
+  .food-name { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+  .food-portion { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .food-points-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .food-pts {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .food-ug { font-size: 10px; color: var(--muted); text-align: right; line-height: 1.3; }
+
+  .qty-control {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+  }
+  .qty-btn {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    min-width: 20px; text-align: center;
+  }
+
+  .food-avoid-tag {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240,79,79,0.15);
+    border: 1px solid rgba(240,79,79,0.3);
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--danger);
+    padding: 2px 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== LOG ===== */
+  .log-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .log-title {
+    font-size: 13px; font-weight: 600;
+    margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn-clear {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+  .log-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  .log-item {
+    display: flex; align-items: center;
+    gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+  .log-item:last-child { border-bottom: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .log-emoji { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+  .log-info { flex: 1; }
+  .log-name { font-size: 13px; font-weight: 600; }
+  .log-detail { font-size: 11px; color: var(--muted); }
+  .log-pts {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px; font-weight: 700;
+    min-width: 30px; text-align: right;
+  }
+  .log-remove {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px;
+    transition: color 0.15s; line-height: 1;
+  }
+  .log-remove:hover { color: var(--danger); }
+
+  /* ===== ADD CUSTOM ===== */
+  .custom-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .custom-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: var(--muted); }
+  .custom-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px; align-items: end;
+  }
+  .custom-input, .custom-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .custom-input:focus, .custom-select:focus { border-color: var(--accent); }
+  .custom-select option { background: var(--surface); }
+  .custom-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .custom-field { display: flex; flex-direction: column; }
+  .btn-add-custom {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--text);
+    font-size: 20px; line-height: 1;
+    width: 40px; height: 40px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-add-custom:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== MENU SUGGESTION ===== */
+  .menu-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .menu-title {
+    font-size: 13px; font-weight: 600; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn-gen {
+    background: rgba(56,224,123,0.12);
+    border: 1px solid rgba(56,224,123,0.3);
+    border-radius: var(--rad-sm);
+    color: var(--accent);
+    font-size: 12px; font-family: 'Sora', sans-serif;
+    padding: 6px 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-gen:hover { background: rgba(56,224,123,0.2); }
+  .menu-result {
+    display: grid; gap: 8px;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2);
+    border-radius: var(--rad-sm);
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+  }
+  .menu-meal { font-size: 11px; font-weight: 600; color: var(--muted); min-width: 70px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .menu-foods { font-size: 13px; flex: 1; line-height: 1.4; }
+  .menu-pts { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
+  .menu-total {
+    display: flex; justify-content: flex-end;
+    padding-top: 10px; gap: 8px; align-items: center;
+  }
+  .menu-total-label { font-size: 12px; color: var(--muted); }
+  .menu-total-pts { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .menu-add-all {
+    background: rgba(56,224,123,0.12);
+    border: 1px solid rgba(56,224,123,0.3);
+    border-radius: var(--rad-sm);
+    color: var(--accent); font-size: 12px;
+    font-family: 'Sora', sans-serif;
+    padding: 6px 12px; cursor: pointer;
+    transition: all 0.2s; margin-top: 10px; width: 100%;
+  }
+  .menu-add-all:hover { background: rgba(56,224,123,0.2); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 560px) {
+    .custom-form { grid-template-columns: 1fr 1fr; }
+    .btn-add-custom { grid-column: 1/-1; width: 100%; height: 38px; }
+    .food-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .intro-card { padding: 24px 20px; }
+    .point-scale { grid-template-columns: repeat(2,1fr); }
+    .gauge-score { font-size: 44px; }
+    #app { padding: 16px 12px 60px; }
+  }
+
+  /* ===== COLOR HELPERS ===== */
+  .ok { color: var(--accent); }
+  .warn { color: var(--warn); }
+  .danger { color: var(--danger); }
+
+  .pill {
+    display: inline-block;
+    border-radius: 4px;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .pill-ok { background: rgba(56,224,123,0.12); color: var(--accent); border: 1px solid rgba(56,224,123,0.25); }
+  .pill-warn { background: rgba(245,152,66,0.12); color: var(--warn); border: 1px solid rgba(245,152,66,0.25); }
+  .pill-danger { background: rgba(240,79,79,0.12); color: var(--danger); border: 1px solid rgba(240,79,79,0.25); }
+
+  .no-results { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 0; }
+
+  /* ===== TABS ===== */
+  .btn-tab {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-tab.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(56,224,123,0.08);
+  }
+
+  /* ===== HISTÓRICO / CALENDÁRIO ===== */
+  .hist-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .hist-month-label {
+    font-size: 17px; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .hist-nav {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--rad-sm); color: var(--muted);
+    font-size: 20px; width: 36px; height: 36px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .hist-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .hist-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .hist-weekdays span {
+    text-align: center; font-size: 11px; color: var(--muted);
+    padding: 4px 0; font-weight: 600; letter-spacing: .04em;
+  }
+  .hist-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px; margin-bottom: 20px;
+  }
+  .hist-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.18s;
+    position: relative;
+    min-width: 0;
+  }
+  .hist-cell:hover { border-color: var(--accent); transform: scale(1.06); }
+  .hist-cell.empty { background: transparent; cursor: default; pointer-events: none; }
+  .hist-cell.today { border-color: var(--accent) !important; }
+  .hist-cell.selected { border-color: #fff !important; }
+  .hist-cell-day { font-size: 11px; color: var(--muted); line-height: 1; }
+  .hist-cell-pts { font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .hist-cell-bar {
+    position: absolute; bottom: 3px; left: 10%; right: 10%;
+    height: 3px; border-radius: 2px;
+  }
+  /* cores por nível */
+  .hist-cell.level-0 { background: var(--surface); }
+  .hist-cell.level-0 .hist-cell-pts { color: var(--muted); }
+  .hist-cell.level-1 { background: rgba(56,224,123,0.12); }
+  .hist-cell.level-1 .hist-cell-pts { color: var(--accent); }
+  .hist-cell.level-2 { background: rgba(56,224,123,0.22); }
+  .hist-cell.level-2 .hist-cell-pts { color: var(--accent); }
+  .hist-cell.level-3 { background: rgba(255,196,0,0.15); }
+  .hist-cell.level-3 .hist-cell-pts { color: var(--warn); }
+  .hist-cell.level-4 { background: rgba(255,100,80,0.15); }
+  .hist-cell.level-4 .hist-cell-pts { color: var(--danger); }
+  .hist-cell.no-data { background: var(--surface); opacity: 0.35; }
+
+  /* Detail panel */
+  .hist-day-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 18px;
+    margin-bottom: 20px;
+    animation: fadeIn .15s ease;
+  }
+  .hist-detail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  #hist-detail-date {
+    font-weight: 700; font-size: 15px; color: var(--text);
+  }
+  .btn-hist-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 20px; cursor: pointer; padding: 0 4px;
+    line-height: 1;
+  }
+  .detail-row {
+    display: flex; gap: 8px; align-items: baseline;
+    padding: 5px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-emoji { font-size: 16px; width: 24px; text-align: center; flex-shrink: 0; }
+  .detail-name { flex: 1; color: var(--text); }
+  .detail-qty { color: var(--muted); font-size: 12px; }
+  .detail-pts { font-weight: 700; min-width: 44px; text-align: right; }
+  .detail-total {
+    margin-top: 10px; display: flex; justify-content: space-between;
+    font-size: 14px; font-weight: 700; color: var(--text);
+  }
+
+  /* ===== RELATÓRIO SEMANAL ===== */
+  .report-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 20px;
+    margin-top: 8px;
+  }
+  .report-title {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    margin-bottom: 14px;
+  }
+  .report-week-picker {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; font-size: 13px; color: var(--muted);
+  }
+  .report-week-picker select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--rad-sm); color: var(--text);
+    font-family: 'Sora', sans-serif; font-size: 13px;
+    padding: 6px 10px; flex: 1; outline: none;
+  }
+  .report-preview {
+    margin-bottom: 14px;
+  }
+  .rp-day {
+    display: flex; gap: 10px; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .rp-day:last-child { border-bottom: none; }
+  .rp-day-name { width: 30px; color: var(--muted); font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .rp-day-date { width: 70px; color: var(--muted); font-size: 11px; flex-shrink: 0; }
+  .rp-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 10px; overflow: hidden; }
+  .rp-bar { height: 100%; border-radius: 4px; transition: width .3s; }
+  .rp-pts { min-width: 48px; text-align: right; font-weight: 700; font-size: 13px; }
+  .rp-no-data { color: var(--muted); font-size: 12px; font-style: italic; flex: 1; }
+  .rp-summary {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+    margin-top: 12px;
+  }
+  .rp-stat {
+    background: var(--surface2); border-radius: var(--rad-sm);
+    padding: 10px; text-align: center;
+  }
+  .rp-stat-val { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .rp-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .btn-report {
+    width: 100%; background: var(--accent);
+    border: none; border-radius: var(--rad-sm);
+    color: #0a0c14; font-family: 'Sora', sans-serif;
+    font-size: 14px; font-weight: 700;
+    padding: 12px; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn-report:hover { opacity: 0.88; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+
+<!-- ===== INTRO MODAL ===== -->
+<div id="intro-overlay">
+  <div class="intro-card">
+    <div class="intro-logo">NíQuel<span>.</span></div>
+    <div class="intro-tagline">Controle diário de níquel na dieta · Baseado em Zirwas & Mislankar (2013)</div>
+
+    <div class="intro-section">
+      <h3>O que é isso?</h3>
+      <p>O <strong>níquel</strong> é um metal presente naturalmente nos alimentos. Para a maioria das pessoas, isso não é problema. Mas quem tem <strong>alergia sistêmica ao níquel</strong> pode sofrer eczema, dermatite ou outros sintomas ao consumir alimentos ricos nesse metal — mesmo sem contato físico com ele.</p>
+    </div>
+
+    <div class="intro-section">
+      <h3>O sistema de pontos</h3>
+      <p>O Dr. Matthew Zirwas (The Ohio State University) criou um sistema de pontuação baseado em dados reais da FDA, onde cada alimento recebe de 0 a 10 pontos conforme a quantidade de níquel por porção:</p>
+      <div class="point-scale">
+        <div class="ps-item"><div class="ps-pts c0">0 pt</div><div class="ps-label">&lt; 1 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c1">1 pt</div><div class="ps-label">1–10 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c2">2 pts</div><div class="ps-label">11–20 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c3">3–4 pts</div><div class="ps-label">21–40 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c3">5–6 pts</div><div class="ps-label">41–60 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c4">7–9 pts</div><div class="ps-label">61–90 µg</div></div>
+        <div class="ps-item"><div class="ps-pts c4">10 pts</div><div class="ps-label">91–100 µg</div></div>
+        <div class="ps-item"><div class="ps-pts" style="color:#a03030">Evite</div><div class="ps-label">&gt; 100 µg</div></div>
+      </div>
+    </div>
+
+    <div class="intro-section">
+      <h3>Seu limite diário</h3>
+      <div class="limit-box">
+        <div class="limit-number">≤ 15</div>
+        <div class="limit-text">
+          <strong>pontos por dia</strong> é o alvo para adultos.<br>
+          A ideia <em>não é</em> eliminar o níquel (impossível), mas manter o consumo abaixo do limiar que dispara sintomas. <strong>Crianças &lt; 12 anos:</strong> até 10 pontos/dia.
+        </div>
+      </div>
+    </div>
+
+    <div class="intro-section">
+      <h3>Como funciona o app</h3>
+      <p>Selecione os alimentos que você consumiu (ou vai consumir). O marcador diário soma os pontos em tempo real. Quando chegar perto de 15, o app avisa. Você também pode gerar um cardápio sugerido e adicionar alimentos personalizados.</p>
+    </div>
+
+    <div class="source-note">
+      📚 Fontes: Zirwas MJ, Molenda MA. <em>Dietary nickel as a cause of systemic contact dermatitis.</em> J Clin Aesthet Dermatol. 2009. &nbsp;·&nbsp; Mislankar M, Zirwas MJ. <em>Low-nickel diet scoring system for systemic nickel allergy.</em> Dermatitis. 2013;24(4):190‑195. &nbsp;·&nbsp; Dados de níquel: FDA Total Diet Study 2006–2008. Não substitui orientação médica.
+    </div>
+
+    <button class="btn-start" onclick="startApp()">Entendido — começar o dia ✓</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+  <div class="app-header">
+    <div class="app-logo">NíQuel<span>.</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-tab active" id="tab-hoje" onclick="switchTab('hoje')">Hoje</button>
+      <button class="btn-tab" id="tab-historico" onclick="switchTab('historico')">📅 Histórico</button>
+      <button class="btn-info" onclick="showIntro()" title="Sobre o sistema">ℹ</button>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: HOJE ===== -->
+  <div id="view-hoje">
+
+  <!-- GAUGE -->
+  <div class="gauge-section">
+    <div class="gauge-top">
+      <div>
+        <div class="gauge-label">Total de hoje</div>
+        <div class="gauge-score ok" id="score-display">0</div>
+      </div>
+      <div class="gauge-limit">
+        <div class="gauge-limit-num">/ 15</div>
+        <div class="gauge-limit-label">pontos limite</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progress-bar" style="width:0%; background: var(--accent)"></div>
+    </div>
+    <div class="status-message" id="status-msg">Nenhum alimento adicionado. Comece selecionando abaixo.</div>
+    <div class="gauge-uc-row">
+      <div class="uc-badge"><strong id="uc-remaining">15</strong>pontos restantes</div>
+      <div class="uc-badge"><strong id="uc-items">0</strong>alimentos registrados</div>
+      <div class="uc-badge"><strong id="uc-ug">0 µg</strong>níquel estimado</div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="log-section" id="log-section" style="display:none">
+    <div class="log-title">
+      Registro de hoje
+      <button class="btn-clear" onclick="clearLog()">Limpar tudo</button>
+    </div>
+    <div id="log-container"></div>
+  </div>
+
+  <!-- MENU SUGGESTION -->
+  <div class="menu-section">
+    <div class="menu-title">
+      Cardápio sugerido
+      <button class="btn-gen" onclick="generateMenu()">↻ Gerar</button>
+    </div>
+    <div id="menu-result" class="menu-result">
+      <div style="color:var(--muted);font-size:13px;text-align:center;padding:14px 0">
+        Clique em "Gerar" para ver uma sugestão de cardápio com no máximo 12 pontos.
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD CUSTOM -->
+  <div class="custom-section">
+    <div class="custom-title">+ Adicionar alimento personalizado</div>
+    <div class="custom-form">
+      <div class="custom-field">
+        <div class="custom-label">Nome do alimento</div>
+        <input class="custom-input" id="custom-name" placeholder="Ex: tapioca, cuscuz…" />
+      </div>
+      <div class="custom-field">
+        <div class="custom-label">Pontos (0–10)</div>
+        <input class="custom-input" id="custom-pts" type="number" min="0" max="10" placeholder="0" />
+      </div>
+      <div class="custom-field">
+        <div class="custom-label">Emoji</div>
+        <input class="custom-input" id="custom-emoji" placeholder="🍽" maxlength="2" style="font-size:18px;text-align:center" />
+      </div>
+      <button class="btn-add-custom" onclick="addCustomFood()" title="Adicionar">＋</button>
+    </div>
+  </div>
+
+  <!-- FOOD DATABASE -->
+  <div>
+    <div class="controls-wrapper">
+      <div class="controls">
+        <input class="search-input" id="search-input" placeholder="Buscar alimento (pizza, sushi, lasanha…)" oninput="renderFoods()" />
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">Todos</button>
+        <button class="filter-btn" id="filter-baixo" onclick="setFilter('baixo')">✅ Baixo</button>
+        <button class="filter-btn" id="filter-medio" onclick="setFilter('medio')">⚠️ Médio</button>
+        <button class="filter-btn" id="filter-alto" onclick="setFilter('alto')">🔴 Alto</button>
+        <button class="filter-btn" id="filter-pratos" onclick="setFilter('pratos')">🍲 Pratos</button>
+        <button class="filter-btn" id="filter-japones" onclick="setFilter('japones')">🍣 Japonesa</button>
+        <button class="filter-btn" id="filter-lanche" onclick="setFilter('lanche')">🥪 Lanches</button>
+        <button class="filter-btn" id="filter-industrial" onclick="setFilter('industrial')">🏭 Industrializados</button>
+      </div>
+    </div>
+    <div class="section-label" id="foods-label">Alimentos</div>
+    <div class="food-grid" id="food-grid"></div>
+    <div id="no-results" class="no-results" style="display:none">Nenhum alimento encontrado.</div>
+  </div><!-- /view-hoje -->
+
+  <!-- ===== VIEW: HISTÓRICO ===== -->
+  <div id="view-historico" style="display:none">
+    <div class="hist-header">
+      <button class="hist-nav" onclick="shiftMonth(-1)">‹</button>
+      <div class="hist-month-label" id="hist-month-label">Janeiro 2025</div>
+      <button class="hist-nav" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="hist-weekdays">
+      <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+    </div>
+    <div class="hist-grid" id="hist-grid"></div>
+
+    <div class="hist-day-detail" id="hist-day-detail" style="display:none">
+      <div class="hist-detail-header">
+        <span id="hist-detail-date"></span>
+        <button class="btn-hist-close" onclick="closeDetail()">×</button>
+      </div>
+      <div id="hist-detail-content"></div>
+    </div>
+
+    <div class="report-section">
+      <div class="report-title">📊 Relatório Semanal</div>
+      <div class="report-week-picker">
+        <label>Semana:</label>
+        <select id="report-week-select" onchange="renderWeekPreview()"></select>
+      </div>
+      <div id="report-preview" class="report-preview"></div>
+      <button class="btn-report" onclick="generateReport()">⬇ Baixar relatório (HTML)</button>
+    </div>
+  </div><!-- /view-historico -->
+
+</div>
+
+<script>
+// ===== BASE DE DADOS DE NÍQUEL =====
+// Fontes científicas peer-reviewed:
+// • Mislankar & Zirwas (Dermatitis 2013) — escala de pontos original
+// • EFSA Scientific Opinion 2020 (>47.000 medições)
+// • Rebelytics v9.1.1 (20.575 medições, 826 alimentos, 257 fontes)
+// • INNIBEL 2019 (mercado belga)
+// Escala Zirwas: 0=<1µg | 1=1–10µg | 2=11–20µg | 3=21–30µg | 4=31–40µg
+//               5=41–50µg | 6=51–60µg | 7=61–70µg | 8=71–80µg | 9=81–90µg | 10=91–100µg
+// avoid=true → >100µg/porção (Zirwas: evitar completamente)
+// ug = valor médio real em µg/porção (baseado nas fontes acima)
+
+const FOODS = [
+  // ===== CARNES, AVES E OVOS =====
+  // EFSA 2020: frango 0,06–0,09 mg/kg → ~6–9µg/100g. Zirwas lista "chicken breast" = 0 pts (<1µg/porção)
+  // Nota: Zirwas usa porções duplas da FDA (~200g), então frango = <2µg/200g ≈ 0 pts
+  { id:'frango-peito', name:'Peito de frango (grelhado/assado/cozido)', emoji:'🍗', pts:0, ug:'~1', portion:'100g', cat:'proteina', avoid:false, note:'EFSA: ~0,06–0,09mg/kg. Zirwas: 0 pts. Proteína base da dieta' },
+  { id:'frango-frito', name:'Frango frito (com pele)', emoji:'🍗', pts:1, ug:'~5', portion:'100g', cat:'proteina', avoid:false, note:'Zirwas: 1 pt. Pele e preparo elevam levemente' },
+  { id:'carne-boi', name:'Carne bovina (bife, patinho, alcatra)', emoji:'🥩', pts:0, ug:'~1', portion:'100g', cat:'proteina', avoid:false, note:'EFSA: ~0,05mg/kg. Zirwas "steak" = 0 pts' },
+  { id:'carne-porco', name:'Costeleta / lombo de porco', emoji:'🐖', pts:1, ug:'~3', portion:'100g', cat:'proteina', avoid:false, note:'EFSA: ~0,03mg/kg. Zirwas "pork chop" = 1 pt' },
+  { id:'ovo', name:'Ovo (cozido, mexido, frito)', emoji:'🍳', pts:0, ug:'~1', portion:'1 un (55g)', cat:'proteina', avoid:false, note:'Rebelytics: média <2µg/unidade. Zirwas: 0 pts' },
+  { id:'presunto', name:'Presunto cozido / peito de peru', emoji:'🥩', pts:1, ug:'~4', portion:'60g (4 fatias)', cat:'proteina', avoid:false, note:'Zirwas "ham, cured / lunch meat" = 1 pt' },
+  { id:'linguica', name:'Linguiça / salsicha', emoji:'🌭', pts:1, ug:'~4', portion:'100g', cat:'proteina', avoid:false, note:'Zirwas "sausage" = 1 pt' },
+  { id:'bacon', name:'Bacon', emoji:'🥓', pts:1, ug:'~3', portion:'30g', cat:'proteina', avoid:false, note:'Zirwas "bacon" = 1 pt' },
+  { id:'mortadela', name:'Mortadela / salame / bologna', emoji:'🥩', pts:1, ug:'~5', portion:'50g', cat:'proteina', avoid:false, note:'Zirwas "bologna / salami" = 1 pt' },
+  // PEIXE: Rebelytics: 85% das amostras de peixe são baixo níquel. Média ~3–8µg/100g
+  { id:'peixe-branco', name:'Peixe branco (tilápia, merluza, corvina)', emoji:'🐟', pts:1, ug:'~5', portion:'100g', cat:'proteina', avoid:false, note:'Rebelytics: 85% das amostras de peixe são baixo níquel. ~3–8µg/100g' },
+  { id:'atum-lata', name:'Atum em lata (em água ou óleo)', emoji:'🐠', pts:0, ug:'~2', portion:'100g (½ lata)', cat:'proteina', avoid:false, note:'Rebelytics: >98% das amostras de atum enlatado são baixo níquel. Zirwas "tuna, canned" = 0 pts' },
+  { id:'sardinha-fresca', name:'Sardinha fresca / grelhada', emoji:'🐡', pts:1, ug:'~8', portion:'100g', cat:'proteina', avoid:false, note:'Rebelytics: peixe fresco em geral baixo. ~5–10µg/100g' },
+  { id:'sardinha-lata', name:'Sardinha em conserva (lata)', emoji:'🐡', pts:1, ug:'~8', portion:'100g', cat:'proteina', avoid:false, note:'Rebelytics: conserva não eleva significativamente o níquel em peixes' },
+  // CAMARÃO: ATENÇÃO! Dado corrigido. Rebelytics: 68% amostras cruas são baixo níquel; cozido 94% baixo.
+  // EFSA média crustáceos: ~20–50 µg/kg (0,02–0,05 mg/kg) → ~2–5µg/100g cozido
+  // MAS há grande variabilidade: amostras cruas chegam a 150µg/kg em regiões poluídas
+  // Zirwas lista "shrimp" = 0 pts, baseado em dados FDA (lotes americanos, porção ~170g = <1µg)
+  // Usamos média conservadora: 1 pt para ser seguro
+  { id:'camarao', name:'Camarão (cozido / grelhado)', emoji:'🦐', pts:1, ug:'~3–8', portion:'100g', cat:'proteina', avoid:false, note:'Rebelytics: 94% das amostras cozidas são baixo níquel (~3–8µg/100g). Alta variabilidade — prefira cozido em água (níquel vai para a água)' },
+  // BIVALVES: Rebelytics: apenas 10% das amostras são baixo níquel. ALTO teor
+  { id:'mariscos', name:'Mariscos / mexilhões / ostras', emoji:'🦪', pts:5, ug:'~45', portion:'100g', cat:'proteina', avoid:false, note:'Rebelytics: bivalves são os frutos do mar com MAIOR níquel. Apenas 10% das amostras são baixo níquel. Consumo moderado' },
+  { id:'kani-kama', name:'Kani kama (surimi)', emoji:'🦀', pts:1, ug:'~5', portion:'100g', cat:'proteina', avoid:false, note:'Peixe processado com baixo teor' },
+  { id:'frango-desfiado', name:'Frango desfiado', emoji:'🫙', pts:0, ug:'~1', portion:'100g', cat:'proteina', avoid:false },
+
+  // ===== LATICÍNIOS =====
+  // Rebelytics: laticínios são o grupo com MENOR níquel consistentemente
+  // Cream, sour cream, cream cheese: <1µg/porção
+  { id:'leite', name:'Leite integral / desnatado', emoji:'🥛', pts:0, ug:'~1', portion:'240ml', cat:'laticinios', avoid:false, note:'Rebelytics: laticínios são o grupo com menor níquel. Zirwas "milk, white" = 0 pts' },
+  { id:'queijo-amarelo', name:'Queijo prato / minas / cheddar / suíço', emoji:'🧀', pts:0, ug:'~1', portion:'30g', cat:'laticinios', avoid:false, note:'Zirwas "cheese, cheddar / Swiss" = 0 pts. Rebelytics: queijos são muito baixos' },
+  { id:'queijo-coalho', name:'Queijo coalho grelhado', emoji:'🧀', pts:1, ug:'~4', portion:'50g', cat:'laticinios', avoid:false },
+  { id:'iogurte-natural', name:'Iogurte natural (sem adicionados)', emoji:'🥣', pts:1, ug:'~5', portion:'175g', cat:'laticinios', avoid:false, note:'Zirwas: 1 pt (~5,3µg/175g — dado FDA original)' },
+  { id:'requeijao', name:'Requeijão / cream cheese / cottage', emoji:'🫙', pts:0, ug:'~0,5', portion:'30g', cat:'laticinios', avoid:false, note:'Rebelytics: cream / sour cream / cream cheese <1µg/porção. Zirwas = 0 pts' },
+  { id:'manteiga', name:'Manteiga (não margarina)', emoji:'🧈', pts:0, ug:'~0,3', portion:'10g', cat:'laticinios', avoid:false, note:'Rebelytics: manteiga ~0,3µg/2 col chá. Zirwas "butter" = 0 pts' },
+  { id:'creme-leite', name:'Creme de leite / half and half', emoji:'🥛', pts:0, ug:'~0,5', portion:'50ml', cat:'laticinios', avoid:false, note:'Zirwas "half and half cream / sour cream" = 0 pts' },
+  { id:'sorvete-creme', name:'Sorvete de creme / baunilha', emoji:'🍦', pts:0, ug:'~1', portion:'100g', cat:'laticinios', avoid:false, note:'Zirwas "ice cream, vanilla" = 0 pts' },
+  { id:'leite-condensado', name:'Leite condensado', emoji:'🫙', pts:0, ug:'~1', portion:'40g', cat:'laticinios', avoid:false },
+
+  // ===== CEREAIS E CARBOIDRATOS =====
+  // Rebelytics: grãos refinados baixo; grãos integrais moderado/alto. Cozinhar em água reduz níquel.
+  { id:'arroz-branco', name:'Arroz branco (polido, cozido)', emoji:'🍚', pts:1, ug:'~3', portion:'200g cozido', cat:'cereal', avoid:false, note:'Rebelytics: arroz cozido tem MENOS níquel que cru (45% redução ao descartar água). Zirwas "rice, white" = 1 pt' },
+  { id:'macarrao-refinado', name:'Macarrão / espaguete branco (cozido)', emoji:'🍝', pts:0, ug:'~2', portion:'200g cozido', cat:'cereal', avoid:false, note:'Rebelytics: massa cozida tem menos níquel que seca. Zirwas "spaghetti" = 0 pts' },
+  { id:'pao-branco', name:'Pão francês / pão branco', emoji:'🥖', pts:1, ug:'~5', portion:'50g', cat:'cereal', avoid:false, note:'Zirwas "bread, white" = 1 pt. Rebelytics: pães de trigo branco são baixos' },
+  { id:'pao-de-forma', name:'Pão de forma branco', emoji:'🍞', pts:1, ug:'~5', portion:'50g (2 fatias)', cat:'cereal', avoid:false, note:'Zirwas "bread, white" = 1 pt' },
+  { id:'tapioca', name:'Tapioca (polvilho de mandioca)', emoji:'🫓', pts:0, ug:'~1', portion:'60g', cat:'cereal', avoid:false, note:'Rebelytics: tapioca / amido de mandioca são baixíssimos. Excelente escolha' },
+  { id:'mandioca', name:'Mandioca / aipim cozido', emoji:'🫚', pts:1, ug:'~5', portion:'150g', cat:'cereal', avoid:false, note:'Rebelytics: raízes em geral baixo níquel. ~3–7µg/100g' },
+  { id:'batata', name:'Batata cozida / assada / purê', emoji:'🥔', pts:1, ug:'~5', portion:'150g', cat:'cereal', avoid:false, note:'Rebelytics: batata é baixo-moderado com grande variabilidade. Descasque e cozinhe em água' },
+  { id:'batata-doce', name:'Batata-doce cozida', emoji:'🍠', pts:1, ug:'~7', portion:'150g', cat:'cereal', avoid:false, note:'Rebelytics: batata-doce e inhame são moderados. ~4–10µg/100g' },
+  { id:'polenta', name:'Polenta / angu (fubá refinado)', emoji:'🌽', pts:1, ug:'~6', portion:'150g', cat:'cereal', avoid:false, note:'Milho refinado tem teor baixo. Rebelytics: ~3–8µg/porção' },
+  { id:'cuscuz-milho', name:'Cuscuz de milho branco', emoji:'🫓', pts:1, ug:'~6', portion:'150g', cat:'cereal', avoid:false },
+  { id:'biscoito-agua-sal', name:'Biscoito de água e sal / cream cracker', emoji:'🫙', pts:1, ug:'~5', portion:'30g', cat:'cereal', avoid:false, note:'Zirwas "crackers (non-whole wheat)" = 1 pt' },
+  { id:'biscoito-doce', name:'Biscoito de açúcar / Maria / maizena', emoji:'🍪', pts:1, ug:'~5', portion:'30g', cat:'cereal', avoid:false, note:'Zirwas "cookies, sugar" = 1 pt. Sem grãos integrais = baixo' },
+  { id:'bolo-milho', name:'Bolo de milho / broa / cornbread', emoji:'🍞', pts:1, ug:'~6', portion:'60g', cat:'cereal', avoid:false, note:'Zirwas "cornbread" = 1 pt' },
+  { id:'pretzel', name:'Pretzel / rosquinha salgada', emoji:'🥨', pts:1, ug:'~4', portion:'30g', cat:'cereal', avoid:false, note:'Zirwas "pretzels" = 1 pt. Rebelytics: o snack salgado com MENOR níquel' },
+  { id:'arroz-integral', name:'Arroz integral (cozido)', emoji:'🌾', pts:2, ug:'~14', portion:'200g cozido', cat:'cereal', avoid:false, note:'Rebelytics: arroz integral tem +50% mais níquel que branco. Cozinhar em excesso de água reduz' },
+  { id:'pao-integral', name:'Pão integral / multigrãos', emoji:'🍞', pts:3, ug:'~22', portion:'50g', cat:'cereal', avoid:false, note:'Rebelytics: pães com sementes, aveia ou soja podem ser muito maiores. Leia ingredientes' },
+  { id:'aveia', name:'Aveia (flocos, mingau)', emoji:'🥣', pts:9, ug:'~85', portion:'40g seco', cat:'cereal', avoid:true, note:'Rebelytics: aveia é uma das maiores fontes de níquel entre grãos. Zirwas "oatmeal" = 9 pts. EVITAR' },
+  { id:'granola', name:'Granola / muesli', emoji:'🌾', pts:6, ug:'~55', portion:'40g', cat:'cereal', avoid:true, note:'Zirwas "cereal, granola with raisins" = 6 pts. Aveia + sementes = ALTO. EVITAR' },
+  { id:'macarrao-instante', name:'Macarrão instantâneo / miojo', emoji:'🍜', pts:0, ug:'~2', portion:'1 pacote (85g)', cat:'cereal', avoid:false, note:'Zirwas "soup, oriental noodles-ramen" = 0 pts. Macarrão refinado + tempero simples' },
+
+  // ===== LEGUMINOSAS =====
+  // Rebelytics: leguminosas são geralmente ALTO níquel; cozinhar e descartar a água reduz
+  // Feijão cozido: em média 3–5 pts. Feijão branco = Zirwas 6 pts
+  { id:'feijao-carioca', name:'Feijão-carioca cozido', emoji:'🫘', pts:3, ug:'~28', portion:'100g cozido', cat:'leguminosa', avoid:false, note:'Rebelytics: feijões cozidos reduzem níquel vs cru. ~25–35µg/100g. Zirwas: moderado (3 pts)' },
+  { id:'feijao-preto', name:'Feijão-preto cozido', emoji:'🫘', pts:3, ug:'~30', portion:'100g cozido', cat:'leguminosa', avoid:false, note:'Similar ao carioca. Descarte a água do cozimento' },
+  { id:'feijao-branco', name:'Feijão branco', emoji:'🫘', pts:6, ug:'~55', portion:'100g', cat:'leguminosa', avoid:true, note:'Zirwas "beans, white" = 6 pts. EVITAR ou consumo muito restrito' },
+  { id:'feijao-verde', name:'Feijão-verde / vagem', emoji:'🫛', pts:2, ug:'~15', portion:'100g', cat:'leguminosa', avoid:false, note:'Rebelytics: vagem é moderado. ~10–20µg/100g' },
+  { id:'ervilha', name:'Ervilha cozida / congelada', emoji:'🫛', pts:4, ug:'~35', portion:'100g', cat:'leguminosa', avoid:false, note:'Rebelytics: ervilha é alta em níquel. Zirwas "peas, frozen" = 4 pts. Porções pequenas' },
+  { id:'lentilha', name:'Lentilha cozida', emoji:'🫘', pts:4, ug:'~38', portion:'100g cozido', cat:'leguminosa', avoid:false, note:'Rebelytics: lentilha = alto. Descarte água de cozimento reduz um pouco' },
+  { id:'grao-bico', name:'Grão-de-bico cozido', emoji:'🫘', pts:4, ug:'~36', portion:'100g', cat:'leguminosa', avoid:false, note:'Rebelytics: grão-de-bico entre os mais baixos das leguminosas, mas ainda alto' },
+  { id:'soja', name:'Soja / edamame / leite de soja', emoji:'🌱', pts:8, ug:'~75', portion:'100g', cat:'leguminosa', avoid:true, note:'Rebelytics: soja tem o maior teor de todas as leguminosas. Tofu ainda mais alto. Zirwas: EVITAR' },
+  { id:'tofu', name:'Tofu (derivado de soja)', emoji:'🟨', pts:8, ug:'~78', portion:'100g', cat:'leguminosa', avoid:true, note:'Rebelytics: tofu é o maior em níquel do grupo feijões. EVITAR' },
+  { id:'amendoim', name:'Amendoim torrado / in natura', emoji:'🥜', pts:3, ug:'~28', portion:'30g', cat:'leguminosa', avoid:false, note:'Rebelytics: amendoim tem grande variabilidade (baixo a alto). Zirwas "peanut butter" = 3 pts para 30g' },
+
+  // ===== VERDURAS E LEGUMES =====
+  // Rebelytics: raízes (cenoura, cebola, rabanete) = baixo níquel
+  // Folhas verdes = baixo-moderado; aspargo e ervilha-torta = alto
+  { id:'alface', name:'Alface / rúcula / chicória', emoji:'🥬', pts:0, ug:'~2', portion:'50g', cat:'verdura', avoid:false, note:'Rebelytics: alfaces são baixo níquel. ~2–4µg/50g' },
+  { id:'pepino', name:'Pepino / abobrinha', emoji:'🥒', pts:0, ug:'~1', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: cucurbitáceas são baixo níquel. ~1–3µg/100g. Zirwas "cucumber" = 0 pts' },
+  { id:'berinjela', name:'Berinjela', emoji:'🍆', pts:0, ug:'~1', portion:'100g', cat:'verdura', avoid:false, note:'Zirwas "eggplant" = 0 pts. Rebelytics: baixo' },
+  { id:'pimentao', name:'Pimentão (verde, vermelho, amarelo)', emoji:'🫑', pts:1, ug:'~3', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: pimentão moderado-baixo. ~2–5µg/100g' },
+  { id:'tomate', name:'Tomate fresco', emoji:'🍅', pts:1, ug:'~3', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: tomate fresco é baixo. Porém molho/pasta concentrada é moderado-alto (níquel do equipamento de cozimento também)' },
+  { id:'cenoura', name:'Cenoura', emoji:'🥕', pts:1, ug:'~4', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: raízes como cenoura são solidamente baixo níquel. Zirwas "carrot" = 1 pt' },
+  { id:'cebola', name:'Cebola', emoji:'🧅', pts:1, ug:'~5', portion:'80g', cat:'verdura', avoid:false, note:'Rebelytics: cebola é baixo níquel. Zirwas "onion" = 1 pt' },
+  { id:'couve-flor', name:'Couve-flor (cozida)', emoji:'🥦', pts:1, ug:'~4', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: crucíferas cozidas em água = baixo. Zirwas "cauliflower" = 1 pt' },
+  { id:'brocolis', name:'Brócolis (cozido em água)', emoji:'🥦', pts:1, ug:'~7', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: brócolis cozido = baixo. Cru = borderline. Zirwas "broccoli" = 1 pt' },
+  { id:'repolho', name:'Repolho / couve-mineira (refogada)', emoji:'🥬', pts:1, ug:'~5', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: repolho e couve crus são baixo; cozidos ainda mais baixos. Zirwas "cabbage/collards" = 1 pt' },
+  { id:'chuchu', name:'Chuchu cozido', emoji:'🥦', pts:1, ug:'~4', portion:'100g', cat:'verdura', avoid:false, note:'Cucurbitácea — baixo níquel' },
+  { id:'beterraba', name:'Beterraba cozida', emoji:'🫶', pts:1, ug:'~5', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: beterraba é baixo-moderado. Zirwas "beets" = 1 pt' },
+  { id:'milho', name:'Milho cozido / milho verde', emoji:'🌽', pts:1, ug:'~6', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: milho tem variabilidade. Zirwas "corn/grits" = 1 pt' },
+  { id:'inhame', name:'Inhame / taro', emoji:'🫚', pts:2, ug:'~15', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: raízes tropicais como taro parecem ser moderados. Poucos dados' },
+  { id:'palmito', name:'Palmito (conserva / fresco)', emoji:'🌿', pts:1, ug:'~6', portion:'100g', cat:'verdura', avoid:false },
+  { id:'champignon', name:'Cogumelo champignon / Paris', emoji:'🍄', pts:0, ug:'~1', portion:'100g', cat:'verdura', avoid:false, note:'Zirwas "mushrooms" = 0 pts. Rebelytics: baixo' },
+  { id:'shitake', name:'Cogumelo shitake', emoji:'🍄', pts:2, ug:'~16', portion:'100g', cat:'verdura', avoid:false, note:'Shitake tem mais níquel que champignon. Moderado' },
+  { id:'okra', name:'Quiabo', emoji:'🌿', pts:1, ug:'~5', portion:'100g', cat:'verdura', avoid:false, note:'Zirwas "okra" = 1 pt' },
+  { id:'espinafre', name:'Espinafre', emoji:'🌿', pts:1, ug:'~8', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: espinafre é baixo-moderado (similar a iceberg lettuce). Cozinhar em água reduz' },
+  { id:'aspargo', name:'Aspargo', emoji:'🌿', pts:3, ug:'~28', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: aspargo é alto. Zirwas "asparagus" = 3 pts' },
+  { id:'couve-de-bruxelas', name:'Couve-de-bruxelas', emoji:'🥦', pts:2, ug:'~16', portion:'100g', cat:'verdura', avoid:false, note:'Rebelytics: couve-de-bruxelas crua é moderada; cozida baixa. Zirwas "brussels sprouts" = 1 pt' },
+  { id:'azeitona', name:'Azeitona / azeite', emoji:'🫒', pts:1, ug:'~4', portion:'30g', cat:'verdura', avoid:false, note:'Zirwas "olives" = 1 pt' },
+  { id:'picles', name:'Picles / pepino em conserva', emoji:'🫙', pts:0, ug:'~2', portion:'50g', cat:'condimento', avoid:false, note:'Zirwas "pickles, dill" = 1 pt (Rebelytics: bordeline baixo)' },
+  { id:'aipo', name:'Aipo / salsão', emoji:'🌿', pts:1, ug:'~4', portion:'100g', cat:'verdura', avoid:false, note:'Zirwas "celery" = 1 pt' },
+
+  // ===== FRUTAS =====
+  // Rebelytics: frutas mais seguras = cereja, maçã, mirtilo, manga, cranberry
+  // Framboesa, amora, abacaxi, ameixa, damasco = alta variabilidade (evitar)
+  { id:'maca', name:'Maçã (sem casca ou com)', emoji:'🍎', pts:0, ug:'~2', portion:'1 un (150g)', cat:'fruta', avoid:false, note:'Rebelytics: maçã é das frutas com MENOR níquel. Zirwas "apple" = 0 pts' },
+  { id:'manga', name:'Manga', emoji:'🥭', pts:0, ug:'~2', portion:'150g', cat:'fruta', avoid:false, note:'Rebelytics: manga = baixíssimo. Uma das mais seguras' },
+  { id:'mirtilo', name:'Mirtilo (blueberry)', emoji:'🫐', pts:0, ug:'~2', portion:'100g', cat:'fruta', avoid:false, note:'Rebelytics: mirtilo entre as frutas mais baixas em níquel' },
+  { id:'mamao', name:'Mamão / papaya', emoji:'🍈', pts:0, ug:'~2', portion:'150g', cat:'fruta', avoid:false },
+  { id:'laranja', name:'Laranja / tangerina', emoji:'🍊', pts:1, ug:'~4', portion:'1 un (150g)', cat:'fruta', avoid:false, note:'Rebelytics: cítricos têm variabilidade moderada. Zirwas "orange" = 1 pt' },
+  { id:'uva', name:'Uva fresca', emoji:'🍇', pts:1, ug:'~4', portion:'100g', cat:'fruta', avoid:false, note:'Rebelytics: uva = baixo-moderado. Zirwas "grapes" = 1 pt' },
+  { id:'banana', name:'Banana', emoji:'🍌', pts:1, ug:'~4', portion:'1 un (100g)', cat:'fruta', avoid:false, note:'Rebelytics: banana tem variabilidade. Zirwas "banana" = 1 pt. Moderação' },
+  { id:'morango', name:'Morango', emoji:'🍓', pts:1, ug:'~5', portion:'100g', cat:'fruta', avoid:false, note:'Rebelytics: morango é baixo-moderado. Variabilidade existente' },
+  { id:'abacate', name:'Abacate', emoji:'🥑', pts:1, ug:'~7', portion:'100g', cat:'fruta', avoid:false, note:'Rebelytics: abacate tem variabilidade maior — alguns estudos mostram moderado' },
+  { id:'pessego', name:'Pêssego / damasco fresco', emoji:'🍑', pts:3, ug:'~28', portion:'1 un (150g)', cat:'fruta', avoid:false, note:'Rebelytics: pêssego pode ser moderado. Zirwas "peach" = 3 pts' },
+  { id:'abacaxi', name:'Abacaxi (fresco)', emoji:'🍍', pts:2, ug:'~15', portion:'150g', cat:'fruta', avoid:false, note:'Rebelytics: nos EUA é baixo; mundialmente é moderado. Zirwas "pineapple" = 3 pts (conservador)' },
+  { id:'melancia', name:'Melancia', emoji:'🍉', pts:3, ug:'~26', portion:'200g', cat:'fruta', avoid:false, note:'Zirwas "watermelon" = 3 pts. Rebelytics: moderado' },
+  { id:'framboesa', name:'Framboesa / amora / groselha', emoji:'🍓', pts:4, ug:'~35', portion:'100g', cat:'fruta', avoid:false, note:'Rebelytics: ALTA VARIABILIDADE — às vezes baixo, às vezes alto. Cautela' },
+  { id:'coco-ralado', name:'Coco ralado (seco)', emoji:'🥥', pts:5, ug:'~45', portion:'30g', cat:'fruta', avoid:false, note:'Rebelytics: coco SECO é alto. Água de coco também. Porções muito pequenas' },
+  { id:'passa-fruta-seca', name:'Uva-passa / fruta seca', emoji:'🍇', pts:1, ug:'~7', portion:'30g', cat:'fruta', avoid:false, note:'Zirwas "raisins" = 1 pt. Ameixa seca = mais alta (7 pts no suco)' },
+  { id:'acai', name:'Açaí (polpa pura)', emoji:'🫐', pts:3, ug:'~25', portion:'200g', cat:'fruta', avoid:false, note:'Dados limitados. Fruta tropical — estimativa moderada. Cuidado com complementos (granola, banana)' },
+  { id:'suco-pineapple', name:'Suco de abacaxi (industrializado)', emoji:'🧃', pts:6, ug:'~55', portion:'200ml', cat:'fruta', avoid:true, note:'Zirwas "pineapple juice" = 6 pts. EVITAR — concentração elevada' },
+  { id:'suco-ameixa', name:'Suco de ameixa (prune juice)', emoji:'🧃', pts:7, ug:'~65', portion:'200ml', cat:'fruta', avoid:true, note:'Zirwas "prune juice" = 7 pts. EVITAR' },
+
+  // ===== DOCES, AÇÚCARES E SOBREMESAS =====
+  { id:'acucar', name:'Açúcar refinado (branco)', emoji:'🍬', pts:0, ug:'~0,1', portion:'10g', cat:'doce', avoid:false, note:'Rebelytics: açúcar branco é mínimo. Marrom um pouco mais alto mas ainda baixo' },
+  { id:'mel', name:'Mel', emoji:'🍯', pts:0, ug:'~2', portion:'20g (1 col sopa)', cat:'doce', avoid:false, note:'Rebelytics: mel tem média 2,6µg/col. sopa mas com variabilidade. Zirwas = 0 pts' },
+  { id:'geleia', name:'Geleia / compota de fruta', emoji:'🫙', pts:0, ug:'~1', portion:'20g', cat:'doce', avoid:false, note:'Zirwas "jelly" = 0 pts' },
+  { id:'bala-dura', name:'Bala / caramelo / pirulito', emoji:'🍬', pts:0, ug:'~0,5', portion:'15g', cat:'doce', avoid:false, note:'Zirwas "candy, hard" = 0 pts' },
+  { id:'pudim', name:'Pudim de leite / flan', emoji:'🍮', pts:0, ug:'~2', portion:'100g', cat:'doce', avoid:false, note:'Base láctea — seguro. Ovo (0pt) + leite (0pt) + açúcar (0pt)' },
+  { id:'mousse-maracuja', name:'Mousse de maracujá', emoji:'🍮', pts:0, ug:'~3', portion:'100g', cat:'doce', avoid:false },
+  { id:'chocolate', name:'Chocolate (ao leite / meio amargo)', emoji:'🍫', pts:6, ug:'~55', portion:'30g', cat:'doce', avoid:true, note:'Rebelytics: chocolate escuro é altíssimo. Ao leite também alto. Zirwas "chocolate" = 6 pts. EVITAR' },
+  { id:'chocolate-amargo', name:'Chocolate amargo (>70% cacau)', emoji:'🍫', pts:9, ug:'~90', portion:'30g', cat:'doce', avoid:true, note:'Rebelytics: quanto mais escuro, MAIS níquel. Zirwas: 9+ pts. EVITAR absolutamente' },
+  { id:'cacau-achocolatado', name:'Cacau em pó / achocolatado', emoji:'☕', pts:6, ug:'~55', portion:'15g', cat:'doce', avoid:true, note:'Zirwas "chocolate syrup" = 6 pts. EVITAR' },
+  { id:'brownie-bolo-choc', name:'Brownie / bolo de chocolate', emoji:'🍫', pts:6, ug:'~55', portion:'60g', cat:'doce', avoid:true, note:'Zirwas "brownie" = 6 pts. EVITAR' },
+  { id:'sorvete-chocolate', name:'Sorvete de chocolate', emoji:'🍫', pts:5, ug:'~45', portion:'100g', cat:'doce', avoid:false, note:'Menos cacau que chocolate puro, mas ainda alto. Prefira baunilha' },
+  { id:'brigadeiro', name:'Brigadeiro / trufa de chocolate', emoji:'🍫', pts:6, ug:'~55', portion:'20g (1 un)', cat:'doce', avoid:true, note:'Base de cacau em pó. EVITAR' },
+
+  // ===== OLEAGINOSAS E SEMENTES =====
+  // Rebelytics: TODOS são alto níquel. Pist./amêndoa ~20–30µg/porção; nozes/castanha/girassol >100µg
+  { id:'amendoa', name:'Amêndoa', emoji:'🌰', pts:3, ug:'~25', portion:'30g', cat:'oleaginosa', avoid:false, note:'Rebelytics: amêndoa entre as MELHORES oleaginosas (~20–30µg/30g). Porções pequenas' },
+  { id:'pistache', name:'Pistache', emoji:'🌿', pts:3, ug:'~23', portion:'30g', cat:'oleaginosa', avoid:false, note:'Rebelytics: pistache ~20–30µg/30g — entre as melhores oleaginosas' },
+  { id:'castanha-caju', name:'Castanha de caju', emoji:'🌰', pts:7, ug:'~65', portion:'30g', cat:'oleaginosa', avoid:true, note:'Rebelytics: cashew >100µg/30g. Zirwas: EVITAR' },
+  { id:'nozes', name:'Nozes', emoji:'🥜', pts:10, ug:'~100', portion:'30g', cat:'oleaginosa', avoid:true, note:'Rebelytics: nozes >100µg/30g. EVITAR' },
+  { id:'sementes-girassol', name:'Sementes de girassol', emoji:'🌻', pts:10, ug:'~100', portion:'30g', cat:'oleaginosa', avoid:true, note:'Rebelytics: >100µg/30g. EVITAR' },
+  { id:'sesamo', name:'Gergelim / tahine (pasta de gergelim)', emoji:'🫙', pts:10, ug:'~95', portion:'30g', cat:'oleaginosa', avoid:true, note:'Rebelytics: altíssimo. EVITAR' },
+  { id:'linhaca', name:'Linhaça / chia', emoji:'🌱', pts:10, ug:'~90', portion:'15g', cat:'oleaginosa', avoid:true, note:'Rebelytics: sementes de linhaça e chia são altíssimas. EVITAR' },
+
+  // ===== CONDIMENTOS, AZEITES E TEMPEROS =====
+  { id:'azeite-oliva', name:'Azeite de oliva', emoji:'🫒', pts:0, ug:'~0,2', portion:'10ml', cat:'condimento', avoid:false, note:'Rebelytics: azeite = o óleo com MENOS níquel. ~0,2µg/col. chá. Zirwas "olive oil" = 0 pts' },
+  { id:'oleo-vegetal', name:'Óleo vegetal (soja, canola, girassol)', emoji:'🫙', pts:0, ug:'~0,5', portion:'10ml', cat:'condimento', avoid:false, note:'Rebelytics: óleos são muito baixos. 0,3–1,2µg/col. chá' },
+  { id:'sal-refinado', name:'Sal refinado (de mesa)', emoji:'🧂', pts:0, ug:'~0,05', portion:'5g', cat:'condimento', avoid:false, note:'Rebelytics: sal de mesa é o item com MENOR níquel de todos (29 estudos). <0,05µg/g' },
+  { id:'acucar-refinado', name:'Açúcar branco refinado', emoji:'🍬', pts:0, ug:'~0,1', portion:'10g', cat:'condimento', avoid:false, note:'Rebelytics: açúcar branco mínimo' },
+  { id:'maionese', name:'Maionese', emoji:'🫙', pts:0, ug:'~1', portion:'20g', cat:'condimento', avoid:false, note:'Zirwas "mayonnaise" = 0 pts' },
+  { id:'mostarda', name:'Mostarda amarela', emoji:'🫙', pts:1, ug:'~4', portion:'10g', cat:'condimento', avoid:false },
+  { id:'ketchup', name:'Ketchup', emoji:'🫙', pts:2, ug:'~14', portion:'30g', cat:'condimento', avoid:false, note:'Rebelytics: tomate concentrado + equipamento de cozimento = moderado' },
+  { id:'molho-tomate', name:'Molho de tomate (cozido/industrializado)', emoji:'🍅', pts:4, ug:'~35', portion:'100g', cat:'condimento', avoid:false, note:'Rebelytics: canning + cooking eleva muito tomate. Prefira tomate fresco quando possível' },
+  { id:'shoyu', name:'Molho shoyu (soja fermentada)', emoji:'🫙', pts:3, ug:'~22', portion:'15ml', cat:'condimento', avoid:false, note:'Soja fermentada — teor moderado. Use com moderação' },
+  { id:'alho-cebola', name:'Alho / cebola (tempero fresco)', emoji:'🧄', pts:1, ug:'~3', portion:'10g', cat:'condimento', avoid:false, note:'Rebelytics: alho, cebola e páprica são bem-testados e são baixos' },
+  { id:'gengibre', name:'Gengibre (fresco ou em pó)', emoji:'🫙', pts:0, ug:'~1', portion:'6g (1 col. chá)', cat:'condimento', avoid:false, note:'Rebelytics: 1µg em 6g de gengibre fresco. Baixo' },
+  { id:'tempero-cubo', name:'Caldo em cubo / tempero em sachê', emoji:'🧂', pts:1, ug:'~5', portion:'1 cubo (11g)', cat:'condimento', avoid:false },
+  { id:'molho-gravy', name:'Molho de assado / gravy', emoji:'🫙', pts:1, ug:'~5', portion:'60ml', cat:'condimento', avoid:false, note:'Zirwas "gravy, canned" = 1 pt' },
+  { id:'wasabi', name:'Wasabi', emoji:'🟢', pts:0, ug:'~0,5', portion:'5g', cat:'condimento', avoid:false, note:'Rebelytics: wasabi é baixo. Boa opção de condimento para o sushi' },
+  { id:'pimenta', name:'Pimenta-do-reino (moída)', emoji:'🌶', pts:1, ug:'~2', portion:'2g (1 pitada)', cat:'condimento', avoid:false, note:'Rebelytics: ~2,4µg/pitada. Pimentas frescas são maiores — use com cuidado' },
+
+  // ===== BEBIDAS =====
+  { id:'agua', name:'Água (filtrada / mineral)', emoji:'💧', pts:0, ug:'0', portion:'qualquer', cat:'bebida', avoid:false, note:'Rebelytics: tap e mineral têm valores similares (~<10µg/375ml). Zirwas recomenda filtrada' },
+  { id:'cafe', name:'Café coado / expresso', emoji:'☕', pts:0, ug:'~4', portion:'150ml (1 xícara)', cat:'bebida', avoid:false, note:'Rebelytics: café coado <4µg/xícara — MELHOR que chá. Grão de café é baixo vs folha de chá. Zirwas "coffee" = 1 pt' },
+  { id:'cha-verde-preto', name:'Chá preto / verde (coado)', emoji:'🍵', pts:1, ug:'~8', portion:'200ml', cat:'bebida', avoid:false, note:'Rebelytics: chá em saquinho ~9µg; folha inteira ~7µg. Nilgiri (Índia) tem menos. Mais que café' },
+  { id:'refrigerante', name:'Refrigerante / soda', emoji:'🥤', pts:0, ug:'~1', portion:'350ml', cat:'bebida', avoid:false, note:'Zirwas "soda / pop / cola" = 0 pts. Rebelytics: baixo' },
+  { id:'suco-maca-laranja', name:'Suco de maçã / laranja / uva', emoji:'🧃', pts:1, ug:'~5', portion:'200ml', cat:'bebida', avoid:false, note:'Zirwas 1 pt. Rebelytics: seguem o teor da fruta' },
+  { id:'limonada', name:'Limonada / limão diluído', emoji:'🍋', pts:1, ug:'~4', portion:'250ml', cat:'bebida', avoid:false, note:'Zirwas "lemonade" = 1 pt' },
+  { id:'cerveja', name:'Cerveja', emoji:'🍺', pts:1, ug:'~5', portion:'350ml', cat:'bebida', avoid:false, note:'Rebelytics: cerveja ~5µg/350ml. Zirwas "beer" = 0 pts (leve discrepância — usamos 1 pt por cautela)' },
+  { id:'vinho', name:'Vinho (tinto / branco / rosé)', emoji:'🍷', pts:1, ug:'~5', portion:'150ml', cat:'bebida', avoid:false, note:'Rebelytics: vinho ~5µg/taça. Sem diferença entre tinto e branco' },
+  { id:'achocolatado', name:'Leite com cacau / achocolatado', emoji:'🥛', pts:4, ug:'~38', portion:'200ml', cat:'bebida', avoid:false, note:'Zirwas "milk, chocolate" = 4 pts. Cacau eleva significativamente' },
+  { id:'milkshake-choc', name:'Milk-shake de chocolate', emoji:'🥤', pts:8, ug:'~75', portion:'350ml', cat:'bebida', avoid:true, note:'Zirwas "milk shake, chocolate" = 8 pts. EVITAR' },
+  { id:'chocolate-quente', name:'Chocolate quente / cacau quente', emoji:'☕', pts:6, ug:'~55', portion:'200ml', cat:'bebida', avoid:true, note:'Rebelytics "hot chocolate = high nickel". EVITAR' },
+  { id:'agua-coco', name:'Água de coco', emoji:'🥥', pts:3, ug:'~25', portion:'300ml', cat:'bebida', avoid:false, note:'Rebelytics: água de coco é alta em níquel. Consumo moderado' },
+  { id:'energetico', name:'Bebida energética', emoji:'🥤', pts:0, ug:'~2', portion:'250ml', cat:'bebida', avoid:false },
+
+  // ===== PRATOS COMPOSTOS =====
+  // Pontuação calculada somando componentes + nota de referência
+  { id:'arroz-feijao', name:'Arroz branco com feijão', emoji:'🍛', pts:4, ug:'~30', portion:'200g arroz + 100g feijão', cat:'prato', avoid:false, note:'Arroz (1pt ~3µg) + feijão carioca (3pts ~28µg) = ~31µg total. Prato base seguro em porção padrão' },
+  { id:'espaguete-bolonhesa', name:'Espaguete à bolonhesa (caseiro)', emoji:'🍝', pts:1, ug:'~8', portion:'350g prato montado', cat:'prato', avoid:false, note:'Zirwas "spaghetti with meat sauce" = 0 pts. Massa refinada (0pt) + carne bovina (0pt) + tomate fresco (1pt) = ~8µg. Excelente opção' },
+  { id:'macarrao-manteiga', name:'Macarrão ao molho branco / manteiga', emoji:'🍝', pts:0, ug:'~4', portion:'350g', cat:'prato', avoid:false, note:'Massa (0pt) + manteiga (0pt) + leite (0pt) = <5µg. Ótima opção' },
+  { id:'macarrao-ramen', name:'Macarrão instantâneo / ramen de pacote', emoji:'🍜', pts:0, ug:'~3', portion:'1 pacote cozido', cat:'prato', avoid:false, note:'Zirwas "soup, oriental noodles-ramen" = 0 pts. Massa refinada = baixíssimo' },
+  { id:'lasanha-bolonhesa', name:'Lasanha à bolonhesa (industrial)', emoji:'🍝', pts:7, ug:'~65', portion:'300g porção', cat:'prato', avoid:false, note:'Zirwas "lasagna with meat" = 7 pts. Molho de tomate concentrado + queijo + massa + carne. CUIDADO — consumo esporádico' },
+  { id:'lasanha-frango', name:'Lasanha de frango (molho branco)', emoji:'🍝', pts:2, ug:'~16', portion:'300g', cat:'prato', avoid:false, note:'Frango (0pt) + massa (0pt) + molho branco (0pt) + queijo (0pt). Muito melhor que bolonhesa' },
+  { id:'pizza-queijo-calabresa', name:'Pizza de queijo / calabresa / portuguesa', emoji:'🍕', pts:3, ug:'~26', portion:'2 fatias (200g)', cat:'prato', avoid:false, note:'Zirwas "pizza, cheese and pepperoni" = 3 pts. Massa + molho tomate + queijo = moderado' },
+  { id:'pizza-frango', name:'Pizza de frango (sem molho tomate pesado)', emoji:'🍕', pts:2, ug:'~16', portion:'2 fatias (200g)', cat:'prato', avoid:false, note:'Massa (0pt) + frango (0pt) + catupiry (0pt) = moderado-baixo. Melhor opção de pizza' },
+  { id:'pizza-chocolate', name:'Pizza de chocolate / Nutella', emoji:'🍕', pts:6, ug:'~55', portion:'2 fatias', cat:'prato', avoid:true, note:'Cacau = alto. EVITAR' },
+  { id:'hamburger', name:'Hambúrguer simples (pão + carne + queijo)', emoji:'🍔', pts:1, ug:'~8', portion:'1 un (180g)', cat:'prato', avoid:false, note:'Pão branco (1pt) + carne (0pt) + queijo (0pt) = 1pt. Boa opção de fast food' },
+  { id:'nuggets', name:'Nuggets de frango (fast food)', emoji:'🍗', pts:3, ug:'~25', portion:'6 un (100g)', cat:'prato', avoid:false, note:'Zirwas "chicken nuggets, fast food" = 3 pts. Empanado eleva. Moderado' },
+  { id:'batata-frita', name:'Batata frita (fast food)', emoji:'🍟', pts:4, ug:'~36', portion:'130g (porção média)', cat:'prato', avoid:false, note:'Zirwas "french fries" = 4 pts. Óleo de fritura e preparo elevam o teor vs batata cozida' },
+  { id:'stroganoff-frango', name:'Estrogonofe de frango (caseiro)', emoji:'🍲', pts:1, ug:'~7', portion:'300g', cat:'prato', avoid:false, note:'Frango (0pt) + creme de leite (0pt) + champignon (0pt) + ketchup (2pt/100g mas pouco). ~7µg' },
+  { id:'stroganoff-carne', name:'Estrogonofe de carne bovina', emoji:'🍲', pts:3, ug:'~28', portion:'300g', cat:'prato', avoid:false, note:'Zirwas "beef stroganoff with noodles" = 3 pts' },
+  { id:'frango-grelhado-legumes', name:'Frango grelhado com legumes', emoji:'🍗', pts:1, ug:'~8', portion:'200g frango + 150g legumes', cat:'prato', avoid:false, note:'Frango (0pt) + cenoura/chuchu/pimentão (1pt) = ~8µg. Excelente prato' },
+  { id:'omelete', name:'Omelete simples (2 ovos + manteiga)', emoji:'🍳', pts:0, ug:'~3', portion:'2 ovos', cat:'prato', avoid:false, note:'Zirwas: 0 pts. Ovo (0pt) + manteiga (0pt) = ótima opção de refeição rápida' },
+  { id:'feijoada', name:'Feijoada (prato completo)', emoji:'🍲', pts:5, ug:'~45', portion:'350g', cat:'prato', avoid:false, note:'Feijão preto (3pts ~30µg) + carnes (0-1pt) + arroz (1pt) = ~45µg total. Consumo esporádico' },
+  { id:'moqueca', name:'Moqueca de peixe ou camarão', emoji:'🍲', pts:2, ug:'~16', portion:'300g', cat:'prato', avoid:false, note:'Peixe/camarão (1pt) + leite de coco leve + temperos baixos = moderado' },
+  { id:'escondidinho', name:'Escondidinho (carne seca ou frango)', emoji:'🫕', pts:2, ug:'~16', portion:'250g', cat:'prato', avoid:false, note:'Mandioca (1pt) + carne (0pt) + queijo (0pt) = ~16µg. Boa opção' },
+  { id:'caldo-verde', name:'Caldo verde (couve + batata + linguiça)', emoji:'🍵', pts:2, ug:'~16', portion:'300ml', cat:'prato', avoid:false, note:'Batata (1pt) + couve (1pt) + linguiça (1pt) = moderado. ~16µg' },
+  { id:'canja-frango', name:'Canja de galinha / sopa de frango', emoji:'🍜', pts:1, ug:'~8', portion:'350ml', cat:'prato', avoid:false, note:'Zirwas: frango (0pt) + macarrão/arroz (1pt) + cenoura (1pt) ≈ 1–2 pts. Excelente opção' },
+  { id:'sopa-legumes', name:'Sopa de legumes (caldo caseiro)', emoji:'🥣', pts:3, ug:'~26', portion:'350ml', cat:'prato', avoid:false, note:'Zirwas "soup, vegetable beef, canned" = 3 pts. Caseira com bons legumes: ~2 pts' },
+
+  // ===== LANCHES E SALGADOS =====
+  { id:'coxinha', name:'Coxinha', emoji:'🫙', pts:1, ug:'~8', portion:'1 un (80g)', cat:'lanche', avoid:false, note:'Massa de batata refinada + frango = baixo-moderado. ~8µg/un' },
+  { id:'pastel', name:'Pastel (carne, queijo ou palmito)', emoji:'🥟', pts:1, ug:'~7', portion:'1 un (80g)', cat:'lanche', avoid:false, note:'Massa refinada + recheio simples = baixo' },
+  { id:'pao-queijo', name:'Pão de queijo (polvilho)', emoji:'🧀', pts:1, ug:'~5', portion:'2 un (60g)', cat:'lanche', avoid:false, note:'Polvilho de mandioca (baixíssimo) + queijo (0pt) = excelente opção de lanche' },
+  { id:'esfiha', name:'Esfirra de carne', emoji:'🫓', pts:1, ug:'~8', portion:'1 un (70g)', cat:'lanche', avoid:false },
+  { id:'kibe', name:'Kibe (assado ou frito)', emoji:'🥙', pts:2, ug:'~16', portion:'1 un (80g)', cat:'lanche', avoid:false, note:'Carne (0pt) + triguilho (trigo partido, moderado) = ~16µg' },
+  { id:'sanduiche-frango', name:'Sanduíche de frango grelhado', emoji:'🥪', pts:1, ug:'~8', portion:'1 un (150g)', cat:'lanche', avoid:false, note:'Pão branco (1pt ~5µg) + frango (0pt) + maionese (0pt) = ~8µg. Zirwas similar' },
+  { id:'sanduiche-misto', name:'Misto quente (pão + queijo + presunto)', emoji:'🥪', pts:1, ug:'~10', portion:'1 un (120g)', cat:'lanche', avoid:false, note:'Pão branco (1pt) + queijo (0pt) + presunto (1pt) = 2pts. ~10µg' },
+  { id:'tapioca-recheada', name:'Tapioca recheada (frango, queijo, ovo)', emoji:'🫓', pts:0, ug:'~3', portion:'1 un (120g)', cat:'lanche', avoid:false, note:'Polvilho (0pt) + recheio baixo = MELHOR opção de lanche. <5µg total' },
+  { id:'chips-batata', name:'Chips de batata', emoji:'🥔', pts:1, ug:'~7', portion:'1 pacote pequeno (40g)', cat:'lanche', avoid:false, note:'Zirwas "potato chips" = 1 pt. Rebelytics: moderado — pode chegar a alto' },
+  { id:'pipoca', name:'Pipoca simples (ar ou manteiga)', emoji:'🍿', pts:2, ug:'~14', portion:'1 porção (50g)', cat:'lanche', avoid:false, note:'Rebelytics: milho tem variabilidade. Moderado. "Corn chips / popcorn = moderate nickel"' },
+  { id:'wrap-frango', name:'Wrap de frango grelhado', emoji:'🌯', pts:1, ug:'~8', portion:'1 un (220g)', cat:'lanche', avoid:false },
+  { id:'hot-dog', name:'Hot dog (pão + salsicha)', emoji:'🌭', pts:1, ug:'~8', portion:'1 un (140g)', cat:'lanche', avoid:false, note:'Zirwas "hot dog" = 1 pt. Pão branco + salsicha = baixo' },
+
+  // ===== CULINÁRIA JAPONESA =====
+  { id:'sushi-nigiri', name:'Sushi niguiri (salmão / atum)', emoji:'🍣', pts:1, ug:'~6', portion:'2 peças (60g)', cat:'japones', avoid:false, note:'Arroz branco (1pt ~3µg) + peixe (~1–2µg/30g) = ~5–6µg/2 peças. Boa opção' },
+  { id:'sashimi', name:'Sashimi (salmão / atum / peixe branco)', emoji:'🐟', pts:1, ug:'~5', portion:'5 fatias (100g)', cat:'japones', avoid:false, note:'Apenas peixe cru. Rebelytics: ~3–8µg/100g. Excelente opção' },
+  { id:'temaki', name:'Temaki de salmão', emoji:'🍙', pts:2, ug:'~10', portion:'1 un (150g)', cat:'japones', avoid:false, note:'Arroz + peixe + nori (alga) — alga tem variabilidade. Moderado-baixo' },
+  { id:'california-roll', name:'California roll / uramaki', emoji:'🍱', pts:2, ug:'~12', portion:'8 peças (120g)', cat:'japones', avoid:false, note:'Arroz + kani (1pt) + pepino (0pt) + abacate (1pt) = moderado' },
+  { id:'gyoza', name:'Gyoza / pastel japonês', emoji:'🥟', pts:2, ug:'~14', portion:'5 un (100g)', cat:'japones', avoid:false, note:'Massa refinada + carne + repolho = moderado-baixo' },
+  { id:'tempura', name:'Tempurá (camarão ou legumes)', emoji:'🍤', pts:2, ug:'~14', portion:'5 un (100g)', cat:'japones', avoid:false, note:'Camarão cozido (1pt) + massa refinada (1pt) = ~14µg' },
+  { id:'yakisoba', name:'Yakisoba de frango ou carne', emoji:'🍜', pts:2, ug:'~16', portion:'300g', cat:'japones', avoid:false, note:'Macarrão refinado (0pt) + frango (0pt) + legumes (1pt) + shoyu moderado (1pt) = ~16µg' },
+  { id:'ramen', name:'Ramen (frango / tonkotsu / shoyu)', emoji:'🍜', pts:1, ug:'~8', portion:'500ml tigela', cat:'japones', avoid:false, note:'Zirwas "soup, oriental noodles-ramen" = 0 pts. Macarrão refinado + caldo + proteína = baixo. 1pt pelo shoyu' },
+  { id:'oniguiri', name:'Oniguiri (bolinho de arroz)', emoji:'🍙', pts:1, ug:'~7', portion:'1 un (110g)', cat:'japones', avoid:false, note:'Arroz branco + recheio de frango ou atum = baixo' },
+  { id:'missoshiru', name:'Sopa missoshiru', emoji:'🍵', pts:4, ug:'~35', portion:'300ml', cat:'japones', avoid:false, note:'Pasta de missô = soja fermentada. Moderado-alto. Porções pequenas' },
+  { id:'edamame', name:'Edamame (soja verde cozida)', emoji:'🌱', pts:8, ug:'~75', portion:'100g', cat:'japones', avoid:true, note:'Soja = altíssimo. EVITAR' },
+  { id:'tofu-japones', name:'Tofu (derivado de soja)', emoji:'🟨', pts:8, ug:'~78', portion:'100g', cat:'japones', avoid:true, note:'Rebelytics: tofu = maior do grupo leguminosas. EVITAR' },
+  { id:'udon', name:'Macarrão udon (trigo branco)', emoji:'🍜', pts:1, ug:'~7', portion:'200g cozido', cat:'japones', avoid:false, note:'Trigo refinado = baixo. Similar ao macarrão ocidental' },
+  { id:'soba', name:'Macarrão sobá (trigo sarraceno / buckwheat)', emoji:'🍜', pts:5, ug:'~45', portion:'200g cozido', cat:'japones', avoid:false, note:'Rebelytics: trigo sarraceno é ALTO em níquel. Zirwas: alto. Limite a porções pequenas' },
+
+  // ===== INDUSTRIALIZADOS / ENLATADOS =====
+  { id:'frango-lata', name:'Frango desfiado enlatado', emoji:'🐔', pts:0, ug:'~2', portion:'100g', cat:'industrializado', avoid:false, note:'Rebelytics: atum e frango enlatados têm teor similar ao fresco. Baixo' },
+  { id:'milho-lata', name:'Milho verde enlatado (escorrido)', emoji:'🌽', pts:1, ug:'~6', portion:'100g', cat:'industrializado', avoid:false, note:'Escorra e enxágue — reduz. Moderado-baixo' },
+  { id:'ervilha-lata', name:'Ervilha enlatada', emoji:'🫛', pts:3, ug:'~28', portion:'100g', cat:'industrializado', avoid:false, note:'Ervilha já é alta; enlatada similar. Escorra a água' },
+  { id:'feijao-lata', name:'Feijão enlatado (escorrido)', emoji:'🫘', pts:3, ug:'~26', portion:'100g', cat:'industrializado', avoid:false, note:'Rebelytics: canned beans com água descartada são similares ao cozido. 3 pts' },
+  { id:'pao-forma-branco', name:'Pão de forma branco (pacote)', emoji:'🍞', pts:1, ug:'~5', portion:'50g (2 fatias)', cat:'industrializado', avoid:false, note:'Zirwas "bread, white" = 1 pt. Verifique ingredientes — sem aveia/multigrão' },
+  { id:'pao-forma-integral', name:'Pão integral / 7 grãos (pacote)', emoji:'🍞', pts:3, ug:'~24', portion:'50g', cat:'industrializado', avoid:false, note:'Ingredientes com sementes/aveia elevam muito. Leia o rótulo' },
+  { id:'biscoito-recheado', name:'Biscoito recheado (tipo Oreo / cream)', emoji:'🍪', pts:4, ug:'~36', portion:'3 un (36g)', cat:'industrializado', avoid:false, note:'Cacau no biscoito escuro + farinha = moderado-alto. Prefira biscoito de açúcar simples' },
+  { id:'nutella', name:'Nutella / creme de avelã com cacau', emoji:'🍫', pts:6, ug:'~55', portion:'30g', cat:'industrializado', avoid:true, note:'Cacau + avelã (oleaginosa alta). EVITAR' },
+  { id:'barra-cereal', name:'Barra de cereal (com aveia / granola)', emoji:'🌾', pts:5, ug:'~45', portion:'1 un (25g)', cat:'industrializado', avoid:false, note:'Aveia + sementes = alto. Zirwas "granola bar with raisins" = 5 pts. Evite se contiver aveia' },
+  { id:'pate-frango', name:'Patê de frango / atum', emoji:'🫙', pts:1, ug:'~5', portion:'30g', cat:'industrializado', avoid:false },
+  { id:'farinha-mandioca', name:'Farinha de mandioca / farofa simples', emoji:'🫚', pts:0, ug:'~3', portion:'30g', cat:'industrializado', avoid:false, note:'Mandioca refinada = baixíssimo. Boa opção de acompanhamento' },
+];
+
+// ===== STATE =====
+let log = []; // { food, qty }
+let activeFilter = 'all';
+let customFoods = [];
+
+function getAllFoods() { return [...FOODS, ...customFoods]; }
+
+// ===== PERSISTÊNCIA (localStorage) =====
+const STORAGE_KEY = 'niquel-dieta-br-v1';
+
+function saveState() {
+  try {
+    const state = {
+      log: log.map(e => ({ foodId: e.food.id, qty: e.qty })),
+      customFoods,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { }
+  // Também commita ao histórico sempre que o estado muda
+  _commitToHistory();
+}
+
+function _commitToHistory() {
+  if (!log.length) return;
+  try {
+    const hist = loadHistory();
+    const key = todayKey();
+    hist[key] = {
+      pts: getTotalScore(),
+      ug: Math.round(log.reduce((s,e) => s + parseUg(e.food.ug) * e.qty, 0)),
+      items: log.map(e => ({
+        foodId: e.food.id,
+        name: e.food.name,
+        emoji: e.food.emoji,
+        pts: getItemPoints(e),
+        ug: e.food.ug,
+        qty: e.qty
+      }))
+    };
+    saveHistory(hist);
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+
+    // Restaura alimentos customizados primeiro
+    if (Array.isArray(state.customFoods)) {
+      customFoods = state.customFoods;
+    }
+
+    // Restaura o log: busca cada alimento pelo id (banco ou custom)
+    if (Array.isArray(state.log)) {
+      const all = getAllFoods();
+      log = state.log
+        .map(entry => {
+          const food = all.find(f => f.id === entry.foodId);
+          return food ? { food, qty: entry.qty } : null;
+        })
+        .filter(Boolean);
+    }
+  } catch (e) { /* estado corrompido — ignora */ }
+}
+
+// ===== UI HELPERS =====
+function getPointColor(pts, avoid) {
+  if (avoid) return 'var(--danger)';
+  if (pts === 0) return 'var(--accent)';
+  if (pts <= 2) return '#7edf9a';
+  if (pts <= 4) return 'var(--accent2)';
+  if (pts <= 6) return 'var(--warn)';
+  return 'var(--danger)';
+}
+
+function getProgressColor(total) {
+  if (total <= 8) return 'var(--accent)';
+  if (total <= 12) return 'var(--accent2)';
+  if (total <= 15) return 'var(--warn)';
+  return 'var(--danger)';
+}
+
+function getItemPoints(entry) {
+  // Pontos reais do item no log: soma o µg da porção pela quantidade
+  // e converte pela escala Zirwas — em vez de usar food.pts fixo × qty.
+  // Isso garante que itens "0 pts" também acumulem pontuação quando
+  // consumidos em quantidade suficiente para passar de 1µg, 11µg, 21µg...
+  const totalUg = parseUg(entry.food.ug) * entry.qty;
+  return ugToPoints(totalUg);
+}
+
+function getTotalScore() {
+  return log.reduce((s, e) => s + getItemPoints(e), 0);
+}
+
+function getStatusMsg(total) {
+  if (total === 0) return 'Nenhum alimento adicionado. Comece selecionando abaixo.';
+  if (total <= 5) return '🟢 Ótimo! Muito abaixo do limite. Pode continuar bem.';
+  if (total <= 10) return '🟡 Bom ritmo. Ainda há espaço para mais refeições.';
+  if (total <= 13) return '🟠 Atenção: você está se aproximando do limite de 15 pontos.';
+  if (total <= 15) return '🔴 Limite atingido! Prefira alimentos de 0–1 ponto pelo resto do dia.';
+  return '⛔ Você ultrapassou o limite diário. Evite alimentos com níquel até amanhã.';
+}
+
+function updateGauge() {
+  const total = getTotalScore();
+  const pct = Math.min((total / 15) * 100, 100);
+  const color = getProgressColor(total);
+  const scoreEl = document.getElementById('score-display');
+  const barEl = document.getElementById('progress-bar');
+  const statusEl = document.getElementById('status-msg');
+
+  scoreEl.textContent = total;
+  scoreEl.style.color = color;
+  barEl.style.width = pct + '%';
+  barEl.style.background = color;
+  statusEl.textContent = getStatusMsg(total);
+  statusEl.style.color = total > 15 ? 'var(--danger)' : total > 12 ? 'var(--warn)' : 'var(--muted)';
+
+  document.getElementById('uc-remaining').textContent = Math.max(0, 15 - total);
+  document.getElementById('uc-items').textContent = log.reduce((s, e) => s + e.qty, 0);
+
+  // Calcular µg real: extrai valor numérico do campo ug de cada alimento
+  // Ex: '~5' → 5, '~3–8' → 5.5 (média), '<1' → 0.5, '~0,5' → 0.5
+  const ugEst = log.reduce((s, e) => {
+    const ugStr = String(e.food.ug || '0');
+    const nums = ugStr.replace(',', '.').match(/[\d.]+/g);
+    if (!nums) return s;
+    const vals = nums.map(Number).filter(n => !isNaN(n) && n < 500);
+    const ugVal = vals.length >= 2 ? (vals[0] + vals[vals.length-1]) / 2 : (vals[0] || 0);
+    return s + ugVal * e.qty;
+  }, 0);
+  const ugEl = document.getElementById('uc-ug');
+  if (ugEl) {
+    ugEl.textContent = Math.round(ugEst) + ' µg';
+    ugEl.style.color = ugEst > 150 ? 'var(--danger)' : ugEst > 120 ? 'var(--warn)' : 'var(--muted)';
+  }
+}
+
+// ===== LOG =====
+function addFoodToLog(food, qty = 1) {
+  const existing = log.find(e => e.food.id === food.id);
+  if (existing) existing.qty += qty;
+  else log.push({ food, qty });
+  renderLog();
+  updateGauge();
+  saveState();
+}
+
+function updateLogQty(id, delta) {
+  const entry = log.find(e => e.food.id === id);
+  if (!entry) return;
+  entry.qty = Math.max(0, entry.qty + delta);
+  if (entry.qty === 0) log = log.filter(e => e.food.id !== id);
+  renderLog();
+  updateGauge();
+  renderFoods();
+  saveState();
+}
+
+function removeFromLog(id) {
+  log = log.filter(e => e.food.id !== id);
+  renderLog();
+  updateGauge();
+  renderFoods();
+  saveState();
+}
+
+function clearLog() {
+  if (!log.length) return;
+  log = [];
+  renderLog();
+  updateGauge();
+  renderFoods();
+  saveState();
+}
+
+function renderLog() {
+  const sec = document.getElementById('log-section');
+  const cont = document.getElementById('log-container');
+  if (!log.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  cont.innerHTML = '';
+  log.forEach(entry => {
+    const pts = getItemPoints(entry);
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `
+      <span class="log-emoji">${entry.food.emoji}</span>
+      <div class="log-info">
+        <div class="log-name">${entry.food.name}</div>
+        <div class="log-detail">${entry.qty}× ${entry.food.portion} · <strong>${entry.food.ug} µg</strong>/porção · ${pts} pts total (≈${Math.round(parseUg(entry.food.ug)*entry.qty)}µg)</div>
+      </div>
+      <div class="log-pts" style="color:${getPointColor(pts, false)}">${pts > 0 ? '+' : ''}${pts}</div>
+      <button class="log-remove" onclick="removeFromLog('${entry.food.id}')">×</button>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+// ===== FOOD GRID =====
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + f).classList.add('active');
+  renderFoods();
+}
+
+function renderFoods() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const grid = document.getElementById('food-grid');
+  const noResults = document.getElementById('no-results');
+  let foods = getAllFoods();
+
+  // filter by text
+  if (q) foods = foods.filter(f => f.name.toLowerCase().includes(q));
+
+  // filter by nickel level
+  if (activeFilter === 'baixo') foods = foods.filter(f => f.pts <= 2 && !f.avoid);
+  else if (activeFilter === 'medio') foods = foods.filter(f => f.pts >= 3 && f.pts <= 5 && !f.avoid);
+  else if (activeFilter === 'alto') foods = foods.filter(f => f.pts > 5 || f.avoid);
+  else if (activeFilter === 'pratos') foods = foods.filter(f => f.cat === 'prato');
+  else if (activeFilter === 'japones') foods = foods.filter(f => f.cat === 'japones');
+  else if (activeFilter === 'lanche') foods = foods.filter(f => f.cat === 'lanche');
+  else if (activeFilter === 'industrial') foods = foods.filter(f => f.cat === 'industrializado');
+
+  // label update
+  const label = document.getElementById('foods-label');
+  const catLabels = { all: 'Todos os alimentos', baixo: 'Alimentos com baixo níquel (0–2 pts)', medio: 'Alimentos com níquel moderado (3–5 pts)', alto: 'Alimentos com alto níquel (6+ pts / evitar)', pratos: 'Pratos compostos', japones: 'Culinária japonesa', lanche: 'Lanches e salgados', industrial: 'Industrializados / enlatados' };
+  const baseLabel = catLabels[activeFilter] || 'Alimentos';
+  label.textContent = baseLabel + ' — ' + foods.length + ' itens';
+
+  if (!foods.length) {
+    grid.innerHTML = '';
+    noResults.style.display = 'block';
+    return;
+  }
+  noResults.style.display = 'none';
+  grid.innerHTML = '';
+
+  foods.forEach(food => {
+    const logEntry = log.find(e => e.food.id === food.id);
+    const selected = !!logEntry;
+    const qty = logEntry ? logEntry.qty : 0;
+    const div = document.createElement('div');
+    div.className = 'food-card' + (selected ? ' selected' : '') + (food.avoid ? ' avoided' : '');
+
+    const ptColor = getPointColor(food.pts, food.avoid);
+    const pillClass = food.pts <= 2 && !food.avoid ? 'pill-ok' : food.pts <= 5 ? 'pill-warn' : 'pill-danger';
+    const pillLabel = food.pts === 0 ? '0 pts' : `${food.pts} pts`;
+
+    div.innerHTML = `
+      ${food.avoid ? '<div class="food-avoid-tag">evitar</div>' : ''}
+      <span class="food-emoji">${food.emoji}</span>
+      <div class="food-name">${food.name}</div>
+      <div class="food-portion">${food.portion}</div>
+      <div class="food-points-row">
+        <span class="food-pts" style="color:${ptColor}">${pillLabel}</span>
+        <span class="food-ug">${food.ug} µg<br>por porção</span>
+      </div>
+      ${selected ? `
+        <div class="qty-control">
+          <button class="qty-btn" onclick="event.stopPropagation();updateLogQty('${food.id}',-1)">−</button>
+          <span class="qty-num">${qty}</span>
+          <button class="qty-btn" onclick="event.stopPropagation();updateLogQty('${food.id}',+1)">+</button>
+        </div>
+      ` : ''}
+      ${food.note ? `<div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.4">${food.note}</div>` : ''}
+    `;
+    if (!selected) {
+      div.onclick = () => { addFoodToLog(food, 1); renderFoods(); };
+    }
+    grid.appendChild(div);
+  });
+}
+
+// ===== CONVERSÃO µG <-> PONTOS (escala Zirwas) =====
+function parseUg(ugStr) {
+  // Converte string de µg para número real
+  const s = String(ugStr || '0').replace(',', '.').replace('<', '').replace('~', '').trim();
+  const nums = s.match(/[\d.]+/g);
+  if (!nums) return 0;
+  const vals = nums.map(Number).filter(n => !isNaN(n) && n < 500);
+  if (vals.length === 0) return 0;
+  if (vals.length >= 2) return (vals[0] + vals[vals.length-1]) / 2; // média de intervalo
+  return vals[0];
+}
+
+function ugToPoints(ug) {
+  // Escala Zirwas: 0=<1µg | 1=1–10µg | 2=11–20µg | 3=21–30µg | 4=31–40µg ...
+  // ou seja, cada 10µg acumulados = +1 ponto, exceto a faixa 0 que é só <1µg.
+  if (ug < 1) return 0;
+  return Math.ceil(ug / 10);
+}
+
+// ===== MENU GENERATOR =====
+
+function generateMenu() {
+  // Cardápio baseado em ciência: Mislankar & Zirwas 2013 + EFSA 2020 + Rebelytics v9.1.1
+  // Meta: <150µg/dia (15 pts). Cada refeição idealmente ≤20µg (2 pts)
+  const all = getAllFoods();
+  // Alimentos seguros: ≤2 pts E µg médio ≤20 E não são "avoid"
+  const safe = all.filter(f => !f.avoid && f.pts <= 2 && parseUg(f.ug) <= 20);
+
+  const proteins = safe.filter(f => f.cat === 'proteina');
+  const cereals = safe.filter(f => f.cat === 'cereal' && f.pts <= 1);
+  const vegs = safe.filter(f => f.cat === 'verdura' && f.pts <= 1);
+  const fruits = safe.filter(f => f.cat === 'fruta' && f.pts <= 1);
+  const dairy = safe.filter(f => f.cat === 'laticinios');
+  const lanches = safe.filter(f => f.cat === 'lanche' && f.pts <= 1);
+  const pratos = safe.filter(f => f.cat === 'prato' && f.pts <= 2);
+
+  const shuffle = arr => [...arr].sort(() => Math.random()-0.5);
+  const pick = (arr, n=1) => shuffle(arr).slice(0,n);
+
+  // Café da manhã: meta ≤15µg total
+  // Opção baseada em Zirwas: ovo + queijo + tapioca + fruta ou leite + pão branco + fruta
+  const cafeOptions = [
+    [...pick(dairy,1), ...pick(cereals.filter(c=>c.id==='tapioca'||c.pts===0),1), ...pick(fruits,1)],
+    [...pick(proteins.filter(p=>p.id==='ovo'),1), ...pick(cereals.filter(c=>c.pts===0),1), ...pick(fruits,1)],
+    [...pick(dairy,1), ...pick(cereals.filter(c=>c.pts<=1),1), ...pick(fruits.filter(f=>f.pts===0),1)],
+  ];
+  const cafe = cafeOptions[Math.floor(Math.random()*cafeOptions.length)];
+
+  // Almoço: meta ≤30µg total (refeição principal)
+  // Baseado em Zirwas: proteína + arroz + feijão (pequeno) + vegetal
+  const almoco = [
+    ...pick(proteins, 1),
+    ...pick(cereals.filter(c=>c.id==='arroz-branco'), 1),
+    ...pick(all.filter(f=>f.id==='feijao-carioca'||f.id==='feijao-preto'), 1),
+    ...pick(vegs.filter(v=>v.pts===0||v.pts===1), 1),
+  ].filter(f=>f);
+
+  // Lanche: meta ≤10µg total
+  // Zirwas: fruta + laticínio ou biscoito simples
+  const lancheOptions = [
+    [...pick(fruits.filter(f=>f.pts===0),1), ...pick(dairy.filter(d=>d.pts===0),1)],
+    [...pick(lanches, 1), ...pick(dairy.filter(d=>d.pts===0),1)],
+    [...pick(cereals.filter(c=>c.id==='biscoito-doce'||c.id==='pretzel'||c.pts===0), 1), ...pick(fruits.filter(f=>f.pts===0),1)],
+  ];
+  const lanche = lancheOptions[Math.floor(Math.random()*lancheOptions.length)];
+
+  // Jantar: meta ≤25µg total
+  // Opção mais leve: proteína + vegetal + carboidrato simples
+  const jantar = [
+    ...pick(proteins, 1),
+    ...pick(vegs.filter(v=>v.pts===0||v.pts===1), 2),
+    ...pick(cereals.filter(c=>c.pts<=1), 1),
+  ];
+
+  const meals = [
+    { label: '🌅 Café da manhã', foods: cafe.filter(f=>f), target: 15 },
+    { label: '☀️ Almoço', foods: almoco.filter(f=>f), target: 30 },
+    { label: '🍵 Lanche', foods: lanche.filter(f=>f), target: 10 },
+    { label: '🌙 Jantar', foods: jantar.filter(f=>f), target: 25 },
+  ];
+
+  const totalPts = meals.reduce((s,m) => s + m.foods.reduce((ss,f) => ss+f.pts,0), 0);
+  const totalUg = Math.round(meals.reduce((s,m) => s + m.foods.reduce((ss,f) => ss + parseUg(f.ug),0), 0));
+  const color = getProgressColor(totalPts);
+
+  const cont = document.getElementById('menu-result');
+  // Guarda o cardápio gerado numa variável global para o botão acessar sem serialização
+  window._lastGeneratedMenu = meals;
+
+  cont.innerHTML = meals.map(m => {
+    const mPts = m.foods.reduce((s,f) => s+f.pts, 0);
+    const mUg = Math.round(m.foods.reduce((s,f) => s + parseUg(f.ug), 0));
+    const ugColor = mUg <= m.target ? 'var(--accent)' : mUg <= m.target * 1.5 ? 'var(--warn)' : 'var(--danger)';
+    return `<div class="menu-item">
+      <span class="menu-meal">${m.label}</span>
+      <span class="menu-foods">${m.foods.map(f=>f.emoji+' '+f.name).join(', ')}</span>
+      <span class="menu-pts" style="color:${getPointColor(mPts,false)}">${mPts} pts · <span style="color:${ugColor}">${mUg}µg</span></span>
+    </div>`;
+  }).join('') + `
+    <div class="menu-total">
+      <span class="menu-total-label">Total do dia:</span>
+      <span class="menu-total-pts" style="color:${color}">${totalPts} pts · ${totalUg}µg / 150µg</span>
+    </div>
+    <button class="menu-add-all" onclick="addMenuToLog()">
+      ➕ Adicionar este cardápio ao diário
+    </button>
+  `;
+}
+
+function addMenuToLog() {
+  const meals = window._lastGeneratedMenu;
+  if (!meals) return;
+  // Desabilita o botão temporariamente para feedback
+  const btn = document.querySelector('.menu-add-all');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Adicionado!'; }
+  // Adiciona todos os alimentos de todas as refeições de uma vez
+  // sem chamar saveState em cada um (só no final)
+  meals.forEach(meal => {
+    meal.foods.forEach(food => {
+      const existing = log.find(e => e.food.id === food.id);
+      if (existing) existing.qty += 1;
+      else log.push({ food, qty: 1 });
+    });
+  });
+  renderLog();
+  updateGauge();
+  renderFoods();
+  saveState();
+}
+
+// ===== CUSTOM FOOD =====
+function addCustomFood() {
+  const name = document.getElementById('custom-name').value.trim();
+  const pts = parseInt(document.getElementById('custom-pts').value) || 0;
+  const emoji = document.getElementById('custom-emoji').value.trim() || '🍽';
+  if (!name) { alert('Digite o nome do alimento.'); return; }
+  const id = 'custom-' + Date.now();
+  customFoods.push({
+    id, name, emoji,
+    pts: Math.min(10, Math.max(0, pts)),
+    ug: `~${pts*10} estimado`,
+    portion: '1 porção',
+    cat: 'custom', avoid: pts > 7
+  });
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-pts').value = '';
+  document.getElementById('custom-emoji').value = '';
+  renderFoods();
+  saveState();
+}
+
+// ===== HISTÓRICO DIÁRIO =====
+// Salva snapshot completo do dia quando o usuário faz clearLog ou muda de dia
+// Estrutura: history[dateKey] = { pts, ug, items: [{foodId, name, emoji, pts, ug, qty}] }
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem('niquel-history-v1');
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function saveHistory(hist) {
+  try { localStorage.setItem('niquel-history-v1', JSON.stringify(hist)); } catch(e) {}
+}
+
+// ===== VERIFICAÇÃO DE DIA NOVO =====
+function checkDayRollover() {
+  try {
+    const savedAt = (() => { try { const s=localStorage.getItem('niquel-dieta-br-v1'); return s ? JSON.parse(s).savedAt : null; } catch(e){return null;}})();
+    if (!savedAt) return;
+    const savedDate = savedAt.slice(0,10);
+    const today = todayKey();
+    if (savedDate !== today && log.length > 0) {
+      // Dia mudou: commita o log antigo no histórico e limpa para o novo dia
+      const hist = loadHistory();
+      const totalPts = getTotalScore();
+      const totalUg = Math.round(log.reduce((s,e) => s + parseUg(e.food.ug)*e.qty, 0));
+      hist[savedDate] = {
+        pts: totalPts, ug: totalUg,
+        items: log.map(e => ({ foodId:e.food.id, name:e.food.name, emoji:e.food.emoji, pts:getItemPoints(e), ug:e.food.ug, qty:e.qty }))
+      };
+      saveHistory(hist);
+      log = [];
+      saveState();
+      renderLog();
+      updateGauge();
+    }
+  } catch(e) {}
+}
+
+// ===== TABS =====
+let activeTab = 'hoje';
+let histViewMonth = new Date();
+let selectedHistDay = null;
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('view-hoje').style.display = tab === 'hoje' ? 'block' : 'none';
+  document.getElementById('view-historico').style.display = tab === 'historico' ? 'block' : 'none';
+  document.getElementById('tab-hoje').classList.toggle('active', tab === 'hoje');
+  document.getElementById('tab-historico').classList.toggle('active', tab === 'historico');
+  if (tab === 'historico') renderCalendar();
+}
+
+// ===== CALENDÁRIO =====
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function shiftMonth(delta) {
+  histViewMonth = new Date(histViewMonth.getFullYear(), histViewMonth.getMonth() + delta, 1);
+  selectedHistDay = null;
+  document.getElementById('hist-day-detail').style.display = 'none';
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const hist = loadHistory();
+  const y = histViewMonth.getFullYear();
+  const m = histViewMonth.getMonth();
+  document.getElementById('hist-month-label').textContent = MONTHS_PT[m] + ' ' + y;
+
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Dom
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayStr = todayKey();
+
+  const grid = document.getElementById('hist-grid');
+  grid.innerHTML = '';
+
+  // Células em branco antes do dia 1
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'hist-cell empty';
+    grid.appendChild(blank);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const dayData = hist[key];
+    // Dia atual: pega do log em memória se não commitado ainda
+    const isToday = key === todayStr;
+    const pts = dayData ? dayData.pts : (isToday ? getTotalScore() : null);
+
+    const cell = document.createElement('div');
+    const level = pts === null ? 'no-data' : pts === 0 ? 'level-0' : pts <= 5 ? 'level-1' : pts <= 10 ? 'level-2' : pts <= 14 ? 'level-3' : 'level-4';
+    cell.className = 'hist-cell ' + level + (isToday ? ' today' : '') + (selectedHistDay === key ? ' selected' : '');
+    cell.innerHTML = '<span class="hist-cell-day">' + d + '</span>' +
+      (pts !== null ? '<span class="hist-cell-pts">' + pts + '</span>' : '') +
+      (pts !== null ? '<span class="hist-cell-bar" style="background:' + getProgressColor(pts||0) + '"></span>' : '');
+    if (pts !== null || isToday) {
+      cell.onclick = () => showDayDetail(key, isToday ? null : dayData, isToday);
+    } else {
+      cell.style.cursor = 'default';
+    }
+    grid.appendChild(cell);
+  }
+
+  // Atualiza semanas disponíveis no picker de relatório
+  buildWeekPicker(hist);
+  renderWeekPreview();
+}
+
+function showDayDetail(key, dayData, isToday) {
+  selectedHistDay = key;
+  renderCalendar(); // re-render para marcar selected
+
+  const [y,m,d] = key.split('-');
+  const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  const label = DAYS_SHORT[dateObj.getDay()] + ', ' + parseInt(d) + ' de ' + MONTHS_PT[parseInt(m)-1] + ' de ' + y;
+  document.getElementById('hist-detail-date').textContent = label;
+
+  const items = isToday ? log.map(e => ({name:e.food.name, emoji:e.food.emoji, pts:getItemPoints(e), ug:e.food.ug, qty:e.qty}))
+                        : (dayData ? dayData.items : []);
+  const totalPts = isToday ? getTotalScore() : (dayData ? dayData.pts : 0);
+  const totalUg  = isToday ? Math.round(log.reduce((s,e)=>s+parseUg(e.food.ug)*e.qty,0)) : (dayData ? dayData.ug : 0);
+
+  const cont = document.getElementById('hist-detail-content');
+  if (!items || !items.length) {
+    cont.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sem registros para este dia.</div>';
+  } else {
+    cont.innerHTML = items.map(it => {
+      const itPts = it.pts;
+      const itUg  = Math.round(parseUg(it.ug) * it.qty);
+      return '<div class="detail-row">' +
+        '<span class="detail-emoji">' + it.emoji + '</span>' +
+        '<span class="detail-name">' + it.name + '</span>' +
+        '<span class="detail-qty">' + it.qty + 'x</span>' +
+        '<span class="detail-pts" style="color:' + getProgressColor(itPts) + '">' + itPts + ' pts · ' + itUg + 'µg</span>' +
+        '</div>';
+    }).join('') +
+    '<div class="detail-total"><span>Total do dia</span><span style="color:' + getProgressColor(totalPts) + '">' + totalPts + ' pts · ' + totalUg + ' µg</span></div>';
+  }
+  document.getElementById('hist-day-detail').style.display = 'block';
+}
+
+function closeDetail() {
+  selectedHistDay = null;
+  document.getElementById('hist-day-detail').style.display = 'none';
+  renderCalendar();
+}
+
+// ===== RELATÓRIO SEMANAL =====
+function getWeekStart(date) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay()); // Sunday
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function buildWeekPicker(hist) {
+  const sel = document.getElementById('report-week-select');
+  const todayDate = new Date();
+  const weeks = new Set();
+
+  // Coleta semanas do histórico + semana atual
+  [...Object.keys(hist), todayKey()].forEach(key => {
+    const ws = getWeekStart(new Date(key + 'T12:00:00'));
+    weeks.add(ws.toISOString().slice(0,10));
+  });
+
+  // Também adiciona as últimas 8 semanas mesmo sem dados
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() - i * 7);
+    const ws = getWeekStart(d);
+    weeks.add(ws.toISOString().slice(0,10));
+  }
+
+  const sorted = [...weeks].sort((a,b) => b.localeCompare(a)); // mais recente primeiro
+
+  const prevVal = sel.value;
+  sel.innerHTML = sorted.map(ws => {
+    const start = new Date(ws + 'T12:00:00');
+    const end = new Date(start); end.setDate(end.getDate() + 6);
+    const fmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+    return '<option value="' + ws + '">' + fmt(start) + ' – ' + fmt(end) + ' ' + end.getFullYear() + '</option>';
+  }).join('');
+
+  // Restaura seleção anterior se ainda válida
+  if (prevVal && [...sel.options].some(o => o.value === prevVal)) sel.value = prevVal;
+}
+
+function renderWeekPreview() {
+  const sel = document.getElementById('report-week-select');
+  if (!sel.value) return;
+  const hist = loadHistory();
+  const weekStart = new Date(sel.value + 'T12:00:00');
+  const days = [];
+  let totalPts = 0, daysWithData = 0, overLimit = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const isToday = key === todayKey();
+    const dayData = hist[key] || (isToday && log.length ? { pts: getTotalScore(), ug: Math.round(log.reduce((s,e)=>s+parseUg(e.food.ug)*e.qty,0)), items: log.map(e=>({name:e.food.name,emoji:e.food.emoji,pts:getItemPoints(e),ug:e.food.ug,qty:e.qty})) } : null);
+    const pts = dayData ? dayData.pts : null;
+    if (pts !== null) { totalPts += pts; daysWithData++; if (pts > 15) overLimit++; }
+    days.push({ d, key, pts, dayData });
+  }
+
+  const avgPts = daysWithData ? Math.round(totalPts / daysWithData) : 0;
+
+  const preview = document.getElementById('report-preview');
+  preview.innerHTML = days.map(({d, pts}) => {
+    const color = pts === null ? 'var(--muted)' : getProgressColor(pts);
+    const pct = pts !== null ? Math.min((pts/15)*100, 100) : 0;
+    return '<div class="rp-day">' +
+      '<span class="rp-day-name">' + DAYS_SHORT[d.getDay()] + '</span>' +
+      '<span class="rp-day-date">' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '</span>' +
+      (pts !== null
+        ? '<div class="rp-bar-wrap"><div class="rp-bar" style="width:' + pct + '%;background:' + color + '"></div></div><span class="rp-pts" style="color:' + color + '">' + pts + ' pts</span>'
+        : '<span class="rp-no-data">sem registro</span><span class="rp-pts" style="color:var(--muted)">—</span>') +
+      '</div>';
+  }).join('') +
+  '<div class="rp-summary">' +
+    '<div class="rp-stat"><div class="rp-stat-val" style="color:' + getProgressColor(avgPts) + '">' + (daysWithData ? avgPts : '—') + '</div><div class="rp-stat-lbl">média diária (pts)</div></div>' +
+    '<div class="rp-stat"><div class="rp-stat-val">' + daysWithData + '</div><div class="rp-stat-lbl">dias registrados</div></div>' +
+    '<div class="rp-stat"><div class="rp-stat-val" style="color:' + (overLimit > 0 ? 'var(--danger)' : 'var(--accent)') + '">' + overLimit + '</div><div class="rp-stat-lbl">dias acima do limite</div></div>' +
+  '</div>';
+}
+
+function generateReport() {
+  const sel = document.getElementById('report-week-select');
+  if (!sel.value) return;
+  const hist = loadHistory();
+  const weekStart = new Date(sel.value + 'T12:00:00');
+  const days = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const isToday = key === todayKey();
+    const dayData = hist[key] || (isToday && log.length ? { pts: getTotalScore(), ug: Math.round(log.reduce((s,e)=>s+parseUg(e.food.ug)*e.qty,0)), items: log.map(e=>({name:e.food.name,emoji:e.food.emoji,pts:getItemPoints(e),ug:e.food.ug,qty:e.qty})) } : null);
+    const lbl = DAYS_SHORT[d.getDay()] + ', ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+    days.push({ lbl, key, dayData });
+  }
+
+  const fmtWeek = (() => {
+    const s = new Date(weekStart), e = new Date(weekStart); e.setDate(e.getDate()+6);
+    return String(s.getDate()).padStart(2,'0')+'/'+String(s.getMonth()+1).padStart(2,'0') + ' a ' + String(e.getDate()).padStart(2,'0')+'/'+String(e.getMonth()+1).padStart(2,'0')+'/'+e.getFullYear();
+  })();
+
+  const daysWithData = days.filter(d=>d.dayData).length;
+  const totalPts = days.reduce((s,d)=>s+(d.dayData?d.dayData.pts:0),0);
+  const avgPts = daysWithData ? Math.round(totalPts/daysWithData) : 0;
+  const overLimit = days.filter(d=>d.dayData&&d.dayData.pts>15).length;
+  const totalUg = days.reduce((s,d)=>s+(d.dayData?d.dayData.ug:0),0);
+
+  const colorFor = pts => pts<=5?'#38e07b':pts<=10?'#a0e878':pts<=15?'#e0c040':'#e05050';
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatório Semanal — Dieta de Níquel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; color: #1a2030; padding: 24px; max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; color: #1a2030; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+  .stat { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .stat-val { font-size: 28px; font-weight: 800; }
+  .stat-lbl { font-size: 12px; color: #888; margin-top: 4px; }
+  .day-card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .day-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .day-label { font-weight: 700; font-size: 15px; }
+  .day-total { font-weight: 800; font-size: 16px; }
+  .progress { background: #eef0f3; border-radius: 6px; height: 8px; margin-bottom: 12px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: #888; font-size: 11px; padding: 4px 6px; border-bottom: 1px solid #eee; }
+  td { padding: 6px 6px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .no-data { color: #aaa; font-style: italic; font-size: 13px; padding: 10px 0; text-align: center; }
+  .footer { margin-top: 28px; font-size: 11px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 14px; }
+  @media print { body { padding: 0; } .day-card { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<h1>📊 Relatório Semanal — Dieta de Níquel</h1>
+<div class="subtitle">Semana de ${fmtWeek} &nbsp;·&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+
+<div class="summary-grid">
+  <div class="stat">
+    <div class="stat-val" style="color:${colorFor(avgPts)}">${daysWithData ? avgPts : '—'}</div>
+    <div class="stat-lbl">Média diária (pts)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">${daysWithData}/7</div>
+    <div class="stat-lbl">Dias registrados</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:${overLimit>0?'#e05050':'#38e07b'}">${overLimit}</div>
+    <div class="stat-lbl">Dias acima do limite</div>
+  </div>
+</div>
+
+${days.map(({lbl, dayData}) => {
+  const pts = dayData ? dayData.pts : null;
+  const ug  = dayData ? dayData.ug  : null;
+  const pct = pts !== null ? Math.min((pts/15)*100,100) : 0;
+  const c   = pts !== null ? colorFor(pts) : '#ccc';
+  return `<div class="day-card">
+  <div class="day-header">
+    <span class="day-label">${lbl}</span>
+    ${pts !== null ? `<span class="day-total" style="color:${c}">${pts} pts &nbsp;·&nbsp; ${ug} µg</span>` : '<span style="color:#bbb;font-size:13px">sem registro</span>'}
+  </div>
+  ${pts !== null ? `<div class="progress"><div class="progress-fill" style="width:${pct}%;background:${c}"></div></div>` : ''}
+  ${dayData && dayData.items && dayData.items.length ? `
+  <table>
+    <thead><tr><th></th><th>Alimento</th><th>Qtd</th><th>Pts</th><th>µg est.</th></tr></thead>
+    <tbody>
+    ${dayData.items.map(it => {
+      const itPts = it.pts;
+      const itUg  = Math.round(parseUg(it.ug) * it.qty);
+      return `<tr><td>${it.emoji}</td><td>${it.name}</td><td>${it.qty}×</td><td style="font-weight:700;color:${colorFor(itPts)}">${itPts}</td><td>${itUg} µg</td></tr>`;
+    }).join('')}
+    </tbody>
+  </table>` : '<div class="no-data">Sem alimentos registrados</div>'}
+</div>`;
+}).join('')}
+
+<div class="footer">
+  Gerado pelo app NíQuel — Dieta de Níquel &nbsp;·&nbsp; Baseado em Mislankar &amp; Zirwas (Dermatitis 2013) + EFSA 2020 + Rebelytics v9.1.1<br>
+  Este relatório é informativo. Consulte sempre um dermatologista ou nutricionista.
+</div>
+</body>
+</html>`;
+
+  // Injeta parseUg no contexto do relatório (para renderizar o HTML)
+  // O parseUg já está disponível pois está no mesmo escopo global do HTML principal
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'relatorio-niquel-' + sel.value + '.html';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ===== INTRO TOGGLE =====
+function startApp() {
+  document.getElementById('intro-overlay').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  checkDayRollover();
+  renderFoods();
+  updateGauge();
+  renderLog();
+}
+function showIntro() {
+  document.getElementById('intro-overlay').style.display = 'flex';
+}
+
+// ===== INICIALIZAÇÃO =====
+(function init() {
+  loadState();
+  checkDayRollover();
+})();
+
+// ===== PWA: registro do Service Worker (cache offline) =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      // Falha ao registrar (ex: aberto via file:// sem servidor) — app continua
+      // funcionando normalmente, só sem o cache offline.
+    });
+  });
+}
+</script>
+</body>
+</html>
