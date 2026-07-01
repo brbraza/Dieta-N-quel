@@ -923,7 +923,10 @@
   <div class="log-section" id="log-section" style="display:none">
     <div class="log-title">
       Registro de hoje
-      <button class="btn-clear" onclick="clearLog()">Limpar tudo</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-clear" style="background:var(--accent);color:#0f1117;border-color:var(--accent);font-weight:700" onclick="manualSaveToday()" id="btn-save-today">💾 Salvar dia</button>
+        <button class="btn-clear" onclick="clearLog()">Limpar tudo</button>
+      </div>
     </div>
     <div id="log-container"></div>
   </div>
@@ -1011,6 +1014,19 @@
       </div>
       <div id="report-preview" class="report-preview"></div>
       <button class="btn-report" onclick="generateReport()">⬇ Baixar relatório (HTML)</button>
+    </div>
+
+    <div class="report-section">
+      <div class="report-title">🔄 Backup do histórico</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+        Baixe um arquivo com todo o histórico desta conta para guardar ou transferir para outro aparelho/usuário. Ao importar, os dias novos são adicionados ao histórico atual; se um dia do arquivo já existir aqui, ele é substituído pelo do arquivo importado.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-report" style="flex:1;min-width:140px" onclick="exportHistoryFile()">⬇ Baixar histórico (.json)</button>
+        <button class="btn-report" style="flex:1;min-width:140px;background:var(--surface2);color:var(--text)" onclick="document.getElementById('import-history-input').click()">⬆ Importar histórico</button>
+        <input type="file" id="import-history-input" accept="application/json,.json" style="display:none" onchange="importHistoryFile(event)">
+      </div>
+      <div id="import-history-status" style="font-size:12px;margin-top:10px;display:none"></div>
     </div>
   </div><!-- /view-historico -->
 
@@ -1867,6 +1883,105 @@ function saveHistory(hist) {
   }
 }
 
+// ===== EXPORTAR / IMPORTAR HISTÓRICO (backup entre contas/aparelhos) =====
+// Formato do arquivo: { app, formatVersion, exportedBy, exportedAt, history }
+// "history" tem exatamente a mesma estrutura usada internamente
+// (history[dateKey] = { pts, ug, items[] }), então importar é essencialmente
+// mesclar esse objeto com o histórico já existente na conta que recebe.
+const HISTORY_FILE_FORMAT_VERSION = 1;
+
+function exportHistoryFile() {
+  const hist = loadHistory();
+  const dayCount = Object.keys(hist).length;
+  if (dayCount === 0) {
+    alert('Ainda não há nenhum dia salvo no histórico desta conta para exportar.');
+    return;
+  }
+  const payload = {
+    app: 'niquel-dieta-br',
+    formatVersion: HISTORY_FILE_FORMAT_VERSION,
+    exportedBy: currentUser,
+    exportedAt: new Date().toISOString(),
+    history: hist,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = todayKey();
+  a.download = `niquel-historico-${currentUser}-${stamp}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function setImportStatus(msg, isError) {
+  const el = document.getElementById('import-history-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--danger)' : 'var(--accent)';
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function importHistoryFile(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ''; // permite selecionar o mesmo arquivo de novo depois
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    let payload;
+    try {
+      payload = JSON.parse(reader.result);
+    } catch (e) {
+      setImportStatus('Arquivo inválido: não é um JSON legível.', true);
+      return;
+    }
+    if (!payload || typeof payload.history !== 'object' || payload.history === null) {
+      setImportStatus('Arquivo não reconhecido: falta o campo "history" esperado.', true);
+      return;
+    }
+    if (payload.app && payload.app !== 'niquel-dieta-br') {
+      setImportStatus('Este arquivo não parece ser um backup do NíQuel.', true);
+      return;
+    }
+
+    const incoming = payload.history;
+    const existing = loadHistory();
+    let addedDays = 0, replacedDays = 0;
+
+    for (const [dateKey, incomingDay] of Object.entries(incoming)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue; // ignora chaves malformadas
+      if (existing[dateKey]) {
+        replacedDays++;
+      } else {
+        addedDays++;
+      }
+      // Dia do arquivo importado substitui o dia local inteiro quando há
+      // conflito de data — evita duplicar quantidades ao reimportar o mesmo
+      // backup mais de uma vez (ver decisão de design na conversa).
+      existing[dateKey] = incomingDay;
+    }
+
+    const ok = saveHistory(existing);
+    if (!ok) {
+      setImportStatus('Falha ao salvar o histórico importado neste aparelho.', true);
+      showStorageWarning();
+      return;
+    }
+
+    setImportStatus(
+      `Importado! ${addedDays} dia(s) novo(s) adicionado(s)` +
+      (replacedDays ? `, ${replacedDays} dia(s) já existente(s) substituído(s) pelo arquivo importado.` : '.'),
+      false
+    );
+
+    // Se a aba histórico estiver visível, atualiza a exibição imediatamente
+    if (activeTab === 'historico') renderCalendar();
+  };
+  reader.onerror = () => setImportStatus('Não foi possível ler o arquivo selecionado.', true);
+  reader.readAsText(file);
+}
+
 // ===== VERIFICAÇÃO DE DIA NOVO =====
 function checkDayRollover() {
   try {
@@ -2230,6 +2345,34 @@ function startApp() {
   // Atualiza nome do usuário logado no header
   const el = document.getElementById('header-user');
   if (el) el.textContent = currentUser || '';
+}
+
+// ===== SALVAR DIA MANUALMENTE =====
+// O app já salva sozinho no histórico a cada alteração e na virada de dia
+// (_commitToHistory / checkDayRollover). Este botão é um atalho manual que
+// garante o commit imediato do dia atual e leva o usuário direto para ver
+// o resultado na aba Histórico, sem precisar esperar nada acontecer sozinho.
+function manualSaveToday() {
+  const btn = document.getElementById('btn-save-today');
+  if (!log.length) {
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = 'Nada para salvar';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    }
+    return;
+  }
+  const ok = _commitToHistory();
+  if (btn) {
+    const original = btn.textContent;
+    btn.textContent = ok ? '✓ Salvo!' : '✗ Falhou';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+  }
+  if (!ok) { showStorageWarning(); return; }
+  // Leva o usuário para o histórico já mostrando o dia salvo
+  switchTab('historico');
+  showDayDetail(todayKey(), null, true);
 }
 
 function showIntro() {
